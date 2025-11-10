@@ -1,1 +1,22 @@
-
+{
+  "date": "2025-11-10",
+  "generated_at_utc": "2025-11-10 23:11 UTC",
+  "ofgem": {
+    "period": "1 Oct 2025 \u2013 31 Dec 2025 (Ofgem default tariff cap)",
+    "electricity_unit_avg": 25.73,
+    "gas_unit_avg": 6.33,
+    "elec_standing_avg": 0.51,
+    "gas_standing_avg": 0.3,
+    "source": "live",
+    "source_urls": [
+      "https://www.ofgem.gov.uk/information-consumers/energy-advice-households/energy-price-cap-explained"
+    ]
+  },
+  "agile": {
+    "has_data": false,
+    "avg": null,
+    "low": null,
+    "high": null,
+    "cheapest_slots": []
+  }
+}
