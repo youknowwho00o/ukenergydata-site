@@ -2,21 +2,460 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>UK Energy Data</title>
+  <title>UK Energy Data – Daily Price Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description"
+        content="UK Energy Data provides simple daily snapshots of UK electricity and gas prices, Ofgem caps, and Agile tariff highlights." />
   <style>
-    body {
-      font-family: system-ui, sans-serif;
-      margin: 5rem auto;
-      max-width: 600px;
-      text-align: center;
-      line-height: 1.6;
+    :root {
+      --bg: #050816;
+      --card: #0b1020;
+      --accent: #35c1ff;
+      --accent-soft: rgba(53,193,255,0.12);
+      --text: #f5f5f7;
+      --muted: #8b8fa3;
+      --danger: #ff6b81;
+      --success: #3bd29f;
+      --font: system-ui, -apple-system, BlinkMacSystemFont, -segoe-ui, sans-serif;
+      --radius-xl: 22px;
+      --radius-lg: 18px;
+      --shadow-soft: 0 18px 45px rgba(0,0,0,0.42);
+      --border-subtle: 1px solid rgba(255,255,255,0.06);
     }
-    h1 { color: #007acc; }
+    * {
+      box-sizing: border-box;
+    }
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: var(--font);
+      background: radial-gradient(circle at top, #0a1930, #02030a 55%);
+      color: var(--text);
+      -webkit-font-smoothing: antialiased;
+    }
+    a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    .page {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 26px 18px 42px;
+    }
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .brand-icon {
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 0, #35c1ff, #0047ff);
+      box-shadow: 0 0 18px rgba(53,193,255,0.9);
+    }
+    .brand-title {
+      font-weight: 600;
+      letter-spacing: 0.02em;
+      font-size: 17px;
+    }
+    .badge {
+      font-size: 10px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background: rgba(53,193,255,0.14);
+      color: var(--accent);
+      border: 1px solid rgba(53,193,255,0.35);
+    }
+    nav {
+      display: flex;
+      gap: 14px;
+      align-items: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+    nav a {
+      color: var(--muted);
+    }
+    nav a:hover {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    .pill {
+      padding: 5px 12px;
+      border-radius: 999px;
+      border: var(--border-subtle);
+      background: rgba(255,255,255,0.02);
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .pill span.dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #3bd29f;
+    }
+
+    .hero {
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(220px, 2.1fr);
+      gap: 18px;
+      align-items: stretch;
+      margin-bottom: 26px;
+    }
+    .hero-main {
+      padding: 18px 18px 16px;
+      background: radial-gradient(circle at top left, rgba(53,193,255,0.12), transparent),
+                  var(--card);
+      border-radius: var(--radius-xl);
+      border: var(--border-subtle);
+      box-shadow: var(--shadow-soft);
+    }
+    .hero-kicker {
+      font-size: 10px;
+      color: var(--accent);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      margin-bottom: 4px;
+    }
+    .hero-title {
+      font-size: 22px;
+      font-weight: 620;
+      margin: 0 0 6px;
+    }
+    .hero-sub {
+      font-size: 12px;
+      color: var(--muted);
+      margin-bottom: 14px;
+    }
+    .hero-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0,1fr));
+      gap: 10px;
+      margin-bottom: 10px;
+      font-size: 10px;
+    }
+    .metric-card {
+      padding: 9px 9px 8px;
+      border-radius: var(--radius-lg);
+      background: rgba(7,11,25,0.98);
+      border: 1px solid rgba(255,255,255,0.04);
+    }
+    .metric-label {
+      color: var(--muted);
+      margin-bottom: 2px;
+      display: flex;
+      justify-content: space-between;
+      gap: 4px;
+      align-items: center;
+    }
+    .metric-value {
+      font-size: 15px;
+      font-weight: 600;
+    }
+    .metric-note {
+      font-size: 9px;
+      color: var(--muted);
+      margin-top: 1px;
+    }
+    .metric-up {
+      color: var(--danger);
+      font-size: 9px;
+    }
+    .metric-down {
+      color: var(--success);
+      font-size: 9px;
+    }
+    .hero-footer {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      font-size: 9px;
+      color: var(--muted);
+    }
+    .hero-footer strong {
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .hero-side {
+      padding: 14px 14px 10px;
+      background: var(--card);
+      border-radius: var(--radius-xl);
+      border: var(--border-subtle);
+      box-shadow: var(--shadow-soft);
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      font-size: 10px;
+    }
+    .hero-side h3 {
+      margin: 0;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    .slot-list {
+      list-style: none;
+      margin: 4px 0 0;
+      padding: 0;
+      display: grid;
+      gap: 4px;
+    }
+    .slot {
+      padding: 5px 7px;
+      background: rgba(12,20,40,1);
+      border-radius: 10px;
+      border: 1px solid rgba(53,193,255,0.15);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 6px;
+    }
+    .slot span.time {
+      color: var(--muted);
+    }
+    .slot span.price {
+      color: var(--accent);
+      font-weight: 500;
+      font-size: 10px;
+    }
+    .disclaimer {
+      font-size: 8px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .layout-bottom {
+      display: grid;
+      grid-template-columns: minmax(0, 2.3fr) minmax(220px, 1.7fr);
+      gap: 16px;
+      margin-top: 4px;
+      align-items: flex-start;
+    }
+    .card {
+      padding: 12px 12px 10px;
+      background: var(--card);
+      border-radius: var(--radius-xl);
+      border: var(--border-subtle);
+      box-shadow: var(--shadow-soft);
+      font-size: 10px;
+      color: var(--muted);
+    }
+    .card h2 {
+      margin: 0 0 6px;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--text);
+    }
+    .card ul {
+      margin: 4px 0 0;
+      padding-left: 14px;
+    }
+    .card li {
+      margin-bottom: 2px;
+    }
+    .small-label {
+      font-size: 8px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+    footer {
+      margin-top: 22px;
+      font-size: 8px;
+      color: var(--muted);
+      text-align: center;
+    }
+    @media (max-width: 720px) {
+      header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .hero {
+        grid-template-columns: 1fr;
+      }
+      .layout-bottom {
+        grid-template-columns: 1fr;
+      }
+    }
   </style>
 </head>
 <body>
-  <h1>✅ ukenergydata.co.uk is live!</h1>
-  <p>This is your GitHub Pages test page. Site deployment successful 🎉</p>
-  <p>Powered by GitHub Pages + Cloudflare</p>
+  <div class="page">
+
+    <header>
+      <div class="brand">
+        <div class="brand-icon"></div>
+        <div>
+          <div class="brand-title">UK Energy Data</div>
+          <div class="badge">Auto-updated insights</div>
+        </div>
+      </div>
+      <nav>
+        <a href="#reports">Daily Reports</a>
+        <a href="#sources">Data Sources</a>
+        <a href="#about">About</a>
+        <span class="pill">
+          <span class="dot"></span> Live monitoring preview
+        </span>
+      </nav>
+    </header>
+
+    <section class="hero">
+      <div class="hero-main">
+        <div class="hero-kicker">UK ENERGY DASHBOARD</div>
+        <h1 class="hero-title">Daily snapshot of UK electricity &amp; gas prices</h1>
+        <p class="hero-sub">
+          Simple, machine-generated summaries based on official Ofgem publications
+          and public tariff data. Built to help households and analysts see changes at a glance.
+        </p>
+
+        <div class="hero-grid">
+          <div class="metric-card">
+            <div class="metric-label">
+              <span>Price cap – Elec (avg)</span>
+              <span class="metric-up">sample</span>
+            </div>
+            <div class="metric-value">26.17 p/kWh</div>
+            <div class="metric-note">Typical direct debit, GB avg*</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">
+              <span>Price cap – Gas (avg)</span>
+              <span class="metric-down">sample</span>
+            </div>
+            <div class="metric-value">6.02 p/kWh</div>
+            <div class="metric-note">Typical direct debit, GB avg*</div>
+          </div>
+          <div class="metric-card">
+            <div class="metric-label">
+              <span>Agile Elec – Today</span>
+              <span class="metric-down">sample</span>
+            </div>
+            <div class="metric-value">18.30 p/kWh</div>
+            <div class="metric-note">Avg half-hourly rate (Octopus Agile)</div>
+          </div>
+        </div>
+
+        <div class="hero-footer">
+          <div>
+            Latest auto-report:
+            <strong>placeholder – will be generated daily via script</strong>
+          </div>
+          <div>
+            Coming next: live charts, regional breakdowns, and downloadable CSVs.
+          </div>
+        </div>
+      </div>
+
+      <aside class="hero-side">
+        <h3>Cheapest Agile slots (demo)</h3>
+        <ul class="slot-list">
+          <li class="slot">
+            <span class="time">02:30 – 03:00</span>
+            <span class="price">7.10 p/kWh</span>
+          </li>
+          <li class="slot">
+            <span class="time">03:00 – 03:30</span>
+            <span class="price">7.40 p/kWh</span>
+          </li>
+          <li class="slot">
+            <span class="time">04:00 – 04:30</span>
+            <span class="price">8.20 p/kWh</span>
+          </li>
+        </ul>
+        <p class="disclaimer">
+          Values above are placeholders for layout preview.<br>
+          They will be replaced by live data fetched via automated scripts.
+        </p>
+      </aside>
+    </section>
+
+    <section class="layout-bottom" id="reports">
+      <div class="card">
+        <div class="small-label">AUTOMATED CONTENT</div>
+        <h2>Daily energy price reports</h2>
+        <p>
+          This site is designed to publish one short, structured report per day:
+        </p>
+        <ul>
+          <li>Latest Ofgem cap levels &amp; effective periods</li>
+          <li>Selected supplier tariffs &amp; Agile-style dynamic prices</li>
+          <li>Day-on-day change indicators and simple commentary</li>
+          <li>Exportable tables for analysts &amp; journalists</li>
+        </ul>
+        <p style="margin-top:6px;">
+          Next step (we will add): a script that fetches data, generates a Markdown/HTML report,
+          and commits it automatically via GitHub Actions.
+        </p>
+      </div>
+
+      <div class="card" id="sources">
+        <div class="small-label">DATA SOURCES</div>
+        <h2>Transparent &amp; public sources</h2>
+        <ul>
+          <li>Ofgem – official price cap announcements &amp; documentation</li>
+          <li>Supplier public APIs / tariffs (e.g. Octopus Agile)</li>
+          <li>Historic datasets for trend lines (to be integrated)</li>
+        </ul>
+        <p style="margin-top:6px;">
+          All numbers on this preview page are sample values.
+          Production data will be pulled directly from official endpoints.
+        </p>
+      </div>
+    </section>
+
+    <section class="layout-bottom" id="about" style="margin-top:10px;">
+      <div class="card">
+        <div class="small-label">ABOUT</div>
+        <h2>What is ukenergydata.co.uk?</h2>
+        <p>
+          A small, automated project focused on turning raw UK energy data into clear,
+          daily-updated signals: caps, tariffs, and trends.
+        </p>
+        <p>
+          The goal is to run as a fully scripted “information machine”:
+          collect → process → publish, with minimal manual work.
+        </p>
+      </div>
+      <div class="card">
+        <h2>Contact &amp; roadmap</h2>
+        <p>
+          Contact: (to be added – e.g. a forwarding email or form).
+        </p>
+        <p>
+          Roadmap:
+        </p>
+        <ul>
+          <li>✓ Launch basic dashboard &amp; static homepage</li>
+          <li>▶ Add automated daily report generator (Python + GitHub Actions)</li>
+          <li>▶ Add charts for 7/30/90-day trends</li>
+          <li>▶ Open API / CSV downloads</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer>
+      &copy; <span id="year"></span> ukenergydata.co.uk · Experimental automated UK energy data dashboard.
+    </footer>
+  </div>
+
+  <script>
+    document.getElementById("year").textContent = new Date().getFullYear();
+  </script>
 </body>
 </html>
