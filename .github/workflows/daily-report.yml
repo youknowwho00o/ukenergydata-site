@@ -1,0 +1,42 @@
+name: Generate daily energy report
+
+on:
+  schedule:
+    - cron: "0 6 * * *"   # 每天 06:00 UTC 跑一次（可改）
+  workflow_dispatch:      # 手动触发按钮
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-commit:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          pip install -r requirements.txt
+
+      - name: Generate daily report
+        run: |
+          python run_daily.py
+
+      - name: Commit and push if changed
+        run: |
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          if [ -n "$(git status --porcelain)" ]; then
+            git add .
+            git commit -m "chore: update daily energy report"
+            git push
+          else
+            echo "No changes to commit."
+          fi
