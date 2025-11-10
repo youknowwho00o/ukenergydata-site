@@ -141,3 +141,17 @@ def build_daily_report():
 
     append_report_link(today)
     print(f"[ok] generated report: {outfile}")
+        # --- 写出 latest.json 给首页使用 ---
+    DATA_DIR.mkdir(exist_ok=True)
+    latest = {
+        "date": today,
+        "generated_at_utc": generated_at,
+        "ofgem": ofgem,
+        "agile": agile,
+    }
+    (DATA_DIR / "latest.json").write_text(
+        json.dumps(latest, indent=2),
+        encoding="utf-8"
+    )
+    print(f"[ok] wrote {DATA_DIR / 'latest.json'}")
+
