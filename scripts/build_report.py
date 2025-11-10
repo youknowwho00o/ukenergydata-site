@@ -1,3 +1,4 @@
+import json
 from pathlib import Path
 from datetime import datetime
 from typing import Dict
@@ -7,7 +8,7 @@ from .fetch_octopus import fetch_agile_rates_for_today, summarize_agile
 
 ROOT = Path(__file__).resolve().parent.parent
 REPORTS_DIR = ROOT / "reports"
-
+DATA_DIR = ROOT / "data"
 
 def ensure_reports_index():
     """
