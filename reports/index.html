@@ -1,66 +1,161 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="utf-8" />
+  <title>UK Energy Data – Daily Reports</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Daily Energy Price Reports</title>
   <style>
+    :root {
+      --bg: #020817;
+      --bg-card: #070f23;
+      --border-subtle: rgba(148, 163, 253, 0.16);
+      --accent: #38bdf8;
+      --text-main: #e5e7eb;
+      --text-subtle: #9ca3af;
+      --radius-xl: 20px;
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, -system-ui, sans-serif;
+    }
+    * { box-sizing: border-box; }
     body {
-      background-color: #0b1120;
-      color: #e2e8f0;
-      font-family: "Inter", sans-serif;
-      max-width: 800px;
-      margin: 3rem auto;
-      padding: 0 1rem;
+      margin: 0;
+      padding: 24px 18px 32px;
+      font-family: var(--font-sans);
+      background: radial-gradient(circle at top, #020817 0, #000 55%);
+      color: var(--text-main);
+    }
+    .page { max-width: 960px; margin: 0 auto; }
+
+    header {
+      margin-bottom: 16px;
+    }
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 999px;
+      background: var(--accent);
+      box-shadow: 0 0 10px var(--accent);
     }
     h1 {
-      color: #93c5fd;
-      text-align: center;
+      font-size: 22px;
+      margin: 0;
     }
-    ul {
-      list-style: none;
-      padding: 0;
+    .subtitle {
+      font-size: 12px;
+      color: var(--text-subtle);
+      margin-top: 4px;
     }
-    li {
-      margin: 0.5rem 0;
+    nav {
+      margin-top: 8px;
+      font-size: 12px;
+      display: flex;
+      gap: 14px;
     }
-    a {
-      color: #38bdf8;
+    nav a {
+      color: var(--text-subtle);
       text-decoration: none;
     }
-    a:hover {
+    nav a:hover { text-decoration: underline; }
+    nav a.active { color: var(--accent); }
+
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-subtle);
+      padding: 14px 14px 10px;
+      margin-top: 10px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 0 0 4px;
+    }
+    .card-text {
+      font-size: 11px;
+      color: var(--text-subtle);
+      margin: 0 0 4px;
+    }
+
+    ul#reports-list {
+      list-style: none;
+      padding-left: 0;
+      margin: 4px 0 0;
+      font-size: 12px;
+    }
+    ul#reports-list li {
+      padding: 6px 8px;
+      border-radius: 10px;
+      border: 1px solid rgba(148,163,253,0.18);
+      background: rgba(5,10,25,0.98);
+      margin-bottom: 5px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+      align-items: baseline;
+    }
+    ul#reports-list a {
+      color: var(--accent);
+      text-decoration: none;
+    }
+    ul#reports-list a:hover {
       text-decoration: underline;
     }
-    .back {
-      display: block;
-      margin-top: 2rem;
-      text-align: center;
+    .meta {
+      font-size: 10px;
+      color: var(--text-subtle);
+      white-space: nowrap;
+    }
+
+    footer {
+      margin-top: 18px;
+      font-size: 9px;
+      color: var(--text-subtle);
+    }
+
+    @media (max-width: 640px) {
+      body { padding: 18px 12px 24px; }
+      ul#reports-list li { flex-direction: column; align-items: flex-start; }
+      .meta { margin-top: 2px; }
     }
   </style>
 </head>
 <body>
-  <h1>Daily Energy Price Reports</h1>
-  <p>Auto-generated snapshots of UK energy prices. Latest reports:</p>
+<div class="page">
+  <header>
+    <div class="brand">
+      <div class="dot"></div>
+      <h1>Daily Energy Price Reports</h1>
+    </div>
+    <div class="subtitle">
+      Archived daily snapshots of Ofgem price cap levels and Octopus Agile data.
+      Generated automatically from public sources.
+    </div>
+    <nav>
+      <a href="../index.html">&larr; Back to dashboard</a>
+      <a href="index.html" class="active">Reports archive</a>
+      <a href="https://github.com/youknowwho00o/ukenergydata-site" target="_blank" rel="noopener">Source on GitHub</a>
+    </nav>
+  </header>
 
-  <ul id="report-list"></ul>
+  <section class="card">
+    <div class="card-title">Browse daily snapshots</div>
+    <p class="card-text">
+      Each report is a static HTML file containing the Ofgem cap snapshot, Octopus Agile summary
+      (when available), and the calculated typical-bill estimate for that day.
+    </p>
+    <ul id="reports-list">
+      <!-- build_report.py will insert latest reports here -->
+    </ul>
+  </section>
 
-  <a class="back" href="/">← Back to main dashboard</a>
-
-  <script>
-    async function loadReports() {
-      const response = await fetch("https://api.github.com/repos/youknowwho00o/ukenergydata-site/contents/reports");
-      const files = await response.json();
-      const list = document.getElementById("report-list");
-      const htmlFiles = files
-        .filter(f => f.name.endsWith(".html") && f.name !== "index.html")
-        .sort((a, b) => b.name.localeCompare(a.name)); // 最新日期在上
-      htmlFiles.forEach(f => {
-        const li = document.createElement("li");
-        li.innerHTML = `<a href="${f.name}" target="_blank">${f.name.replace(".html", "")}</a>`;
-        list.appendChild(li);
-      });
-    }
-    loadReports();
-  </script>
-<ul><li><a href='2025-11-10.html'>2025-11-10 – Daily report</a></li></ul></body>
+  <footer>
+    &copy; ukenergydata.co.uk · Auto-generated from public data sources.
+  </footer>
+</div>
+</body>
 </html>
