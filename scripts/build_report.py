@@ -20,8 +20,8 @@ TDCV_GAS_KWH = 11500
 
 def ensure_reports_index() -> None:
     """
-    Ensure reports/index.html exists with a simple list skeleton.
-    Only creates once; safe to call every run.
+    Ensure reports/index.html exists with a styled list skeleton.
+    Safe to call every run.
     """
     REPORTS_DIR.mkdir(exist_ok=True)
     index_file = REPORTS_DIR / "index.html"
@@ -143,16 +143,16 @@ def compute_typical_bill(ofgem: Dict) -> Optional[Dict]:
     try:
         elec_unit_p = float(ofgem["electricity_unit_avg"])
         gas_unit_p = float(ofgem["gas_unit_avg"])
-        elec_sc_gbp_per_day = float(ofgem["elec_standing_avg"])
-        gas_sc_gbp_per_day = float(ofgem["gas_standing_avg"])
+        elec_sc = float(ofgem["elec_standing_avg"])
+        gas_sc = float(ofgem["gas_standing_avg"])
     except Exception:
         return None
 
     elec_unit = elec_unit_p / 100.0
     gas_unit = gas_unit_p / 100.0
 
-    elec_annual = elec_unit * TDCV_ELEC_KWH + elec_sc_gbp_per_day * 365.0
-    gas_annual = gas_unit * TDCV_GAS_KWH + gas_sc_gbp_per_day * 365.0
+    elec_annual = elec_unit * TDCV_ELEC_KWH + elec_sc * 365.0
+    gas_annual = gas_unit * TDCV_GAS_KWH + gas_sc * 365.0
     dual_annual = elec_annual + gas_annual
     dual_monthly = dual_annual / 12.0
 
@@ -175,8 +175,7 @@ def compute_typical_bill(ofgem: Dict) -> Optional[Dict]:
 
 def build_cap_history_with_current(ofgem: Dict) -> List[Dict]:
     """
-    Take manual OFGEM_CAP_HISTORY and append current cap if not present.
-    Returns a list ordered as given (roughly chronological).
+    Take manual OFGEM_CAP_HISTORY and append current cap if not already present.
     """
     history: List[Dict] = [dict(h) for h in OFGEM_CAP_HISTORY]
 
@@ -191,19 +190,16 @@ def build_cap_history_with_current(ofgem: Dict) -> List[Dict]:
         if not any(h.get("period") == current["period"] for h in history):
             history.append(current)
 
-    # 过滤掉缺字段的
-    history = [
+    return [
         h for h in history
         if h.get("electricity_unit_avg") is not None and h.get("gas_unit_avg") is not None
     ]
 
-    return history
-
 
 def compute_cap_changes(history: List[Dict]) -> Optional[Dict]:
     """
-    Given cap history including current period as last entry,
-    compute percentage change vs previous period and vs historical peak.
+    Using history where last entry is current period,
+    compute change vs previous period and vs peak.
     """
     if len(history) < 2:
         return None
@@ -222,7 +218,6 @@ def compute_cap_changes(history: List[Dict]) -> Optional[Dict]:
     elec_change = pct(curr["electricity_unit_avg"], prev["electricity_unit_avg"])
     gas_change = pct(curr["gas_unit_avg"], prev["gas_unit_avg"])
 
-    # vs historical peak (unit rates only)
     peak = max(history, key=lambda h: h["electricity_unit_avg"])
     peak_label = peak.get("label") or peak.get("period")
     peak_elec_change = pct(curr["electricity_unit_avg"], peak["electricity_unit_avg"])
@@ -237,7 +232,9 @@ def compute_cap_changes(history: List[Dict]) -> Optional[Dict]:
 
 
 def append_report_link(date_str: str, ofgem: Dict, agile: Dict, typical_bill: Optional[Dict]) -> None:
-    """Insert a line for this report into reports/index.html (if not already present)."""
+    """
+    Insert today's report link into reports/index.html, newest first.
+    """
     index_file = REPORTS_DIR / "index.html"
     if not index_file.exists():
         ensure_reports_index()
@@ -247,7 +244,7 @@ def append_report_link(date_str: str, ofgem: Dict, agile: Dict, typical_bill: Op
     if marker not in html:
         return
 
-    # meta summary
+    # Build meta summary
     parts = []
     eu = ofgem.get("electricity_unit_avg")
     gu = ofgem.get("gas_unit_avg")
@@ -257,8 +254,8 @@ def append_report_link(date_str: str, ofgem: Dict, agile: Dict, typical_bill: Op
         parts.append(f"typical ~£{typical_bill['dual_annual_gbp']:.0f}/yr")
     if agile.get("has_data") and agile.get("avg") is not None:
         parts.append(f"Agile {agile['avg']:.2f}p")
-    meta = " · ".join(parts) if parts else ""
 
+    meta = " · ".join(parts) if parts else ""
     line = f'<li><a href="{date_str}.html">{date_str}</a>'
     if meta:
         line += f'<span class="meta">{meta}</span>'
@@ -268,7 +265,6 @@ def append_report_link(date_str: str, ofgem: Dict, agile: Dict, typical_bill: Op
         return
 
     before, after = html.split(marker, 1)
-    # 插在列表首行（最新在上）
     new_html = before + marker + "\n    " + line + after
     index_file.write_text(new_html, encoding="utf-8")
 
@@ -285,7 +281,6 @@ def build_daily_report() -> None:
     agile = summarize_agile(agile_raw)
     typical_bill = compute_typical_bill(ofgem)
 
-    # 历史 + 较前期对比
     cap_history = build_cap_history_with_current(ofgem)
     cap_change = compute_cap_changes(cap_history)
 
@@ -296,7 +291,7 @@ def build_daily_report() -> None:
         "<!DOCTYPE html>",
         "<html lang='en'>",
         "<head>",
-        f"  <meta charset='utf-8' />",
+        "  <meta charset='utf-8' />",
         f"  <title>UK Energy Data – Daily Report {today}</title>",
         "  <meta name='viewport' content='width=device-width, initial-scale=1.0' />",
         "  <style>",
@@ -328,10 +323,10 @@ def build_daily_report() -> None:
         lines += [
             "<p>",
             f"Compared with <strong>{cap_change['prev_label']}</strong>: ",
-            f"electricity ",
+            "electricity ",
             ("+" if (cap_change['elec_vs_prev_pct'] or 0) > 0 else ""),
             f"{cap_change['elec_vs_prev_pct']}%, ",
-            f"gas ",
+            "gas ",
             ("+" if (cap_change['gas_vs_prev_pct'] or 0) > 0 else ""),
             f"{cap_change['gas_vs_prev_pct']}%.",
             "</p>",
@@ -340,8 +335,7 @@ def build_daily_report() -> None:
             lines += [
                 "<p>",
                 f"Electricity unit rate is {cap_change['elec_vs_peak_pct']}% ",
-                "vs the peak period ",
-                f"({cap_change['peak_label']}).",
+                f"vs the peak period ({cap_change['peak_label']}).",
                 "</p>",
             ]
 
@@ -365,7 +359,6 @@ def build_daily_report() -> None:
             "</em></p>",
         ]
 
-    # Agile
     lines += ["<h2>Octopus Agile electricity – today</h2>"]
     if agile["has_data"]:
         lines += [
@@ -383,12 +376,11 @@ def build_daily_report() -> None:
     else:
         lines.append("<p>Agile data not available for this day.</p>")
 
-    # Notes
     lines += [
         "<h2>Notes</h2>",
         "<ul>",
         "<li>All values are approximate and for informational use only.</li>",
-        "<li>Ofgem figures are scraped from official publications; check Ofgem before quoting.</li>",
+        "<li>Ofgem figures are scraped from official publications; always check Ofgem before quoting.</li>",
         "<li>Agile rates come from the public Octopus Energy API when available.</li>",
         "</ul>",
         "<p><a href='index.html'>&larr; Back to reports index</a></p>",
@@ -400,7 +392,7 @@ def build_daily_report() -> None:
     outfile.write_text("\n".join(lines), encoding="utf-8")
     print(f"[ok] generated report: {outfile}")
 
-    # --- latest.json for dashboard ---
+    # latest.json
     DATA_DIR.mkdir(exist_ok=True)
     latest: Dict = {
         "date": today,
@@ -417,10 +409,10 @@ def build_daily_report() -> None:
     latest_path.write_text(json.dumps(latest, indent=2), encoding="utf-8")
     print(f"[ok] wrote {latest_path}")
 
-    # --- write cap history json (for trend chart) ---
-    (DATA_DIR / "ofgem_history.json").write_text(
-        json.dumps(cap_history, indent=2), encoding="utf-8"
-    )
+    # history json for frontend chart
+    history_path = DATA_DIR / "ofgem_history.json"
+    history_path.write_text(json.dumps(cap_history, indent=2), encoding="utf-8")
+    print(f"[ok] wrote {history_path}")
 
-    # --- update reports index ---
+    # update reports index
     append_report_link(today, ofgem, agile, typical_bill)
