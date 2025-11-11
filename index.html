@@ -5,7 +5,7 @@
   <title>UK Energy Data – Daily snapshot of UK electricity &amp; gas prices</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <meta name="description"
-        content="Automated daily snapshot of UK electricity and gas prices, including Ofgem price cap and Octopus Agile data." />
+        content="Clean, automated daily snapshots of UK electricity and gas prices using Ofgem price cap data and public tariff feeds." />
   <style>
     :root {
       --bg: #020817;
@@ -25,7 +25,7 @@
     * { box-sizing: border-box; }
     body {
       margin: 0;
-      padding: 30px 22px 40px;
+      padding: 0 22px 40px;
       font-family: var(--font-sans);
       background: radial-gradient(circle at top, #020817 0, #000 55%);
       color: var(--text-main);
@@ -35,12 +35,16 @@
 
     .page { max-width: 1320px; margin: 0 auto; }
 
+    /* Sticky header inspired by clean news sites */
     header {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-bottom: 26px;
+      position: sticky;
+      top: 0;
+      z-index: 20;
+      padding: 16px 0 10px;
+      background: radial-gradient(circle at top, rgba(2,8,23,0.98), rgba(2,6,23,0.98));
+      backdrop-filter: blur(16px);
     }
+
     .brand-line {
       display: flex;
       align-items: center;
@@ -59,7 +63,7 @@
       font-weight: 600;
     }
     .brand-sub {
-      font-size: 13px;
+      font-size: 12px;
       padding: 2px 9px;
       border-radius: var(--radius-pill);
       background: var(--accent-soft);
@@ -72,7 +76,7 @@
       align-items: center;
       flex-wrap: wrap;
       font-size: 13px;
-      margin-top: 4px;
+      margin-top: 6px;
     }
     nav a { color: var(--text-subtle); }
     nav a.active { color: var(--accent); font-weight: 500; }
@@ -121,6 +125,10 @@
       background: rgba(127, 29, 29, 0.4);
     }
 
+    main {
+      margin-top: 14px;
+    }
+
     .grid {
       display: grid;
       grid-template-columns: minmax(0, 7fr) minmax(280px, 4fr);
@@ -139,12 +147,12 @@
     .headline {
       font-size: 26px;
       font-weight: 600;
-      margin: 0 0 6px;
+      margin: 0 0 4px;
     }
     .lede {
       font-size: 13px;
       color: var(--text-subtle);
-      margin: 0 0 14px;
+      margin: 0 0 10px;
       max-width: 760px;
     }
 
@@ -170,7 +178,32 @@
     .meta-line {
       font-size: 10px;
       color: var(--text-subtle);
-      margin-top: 3px;
+      margin-top: 2px;
+    }
+
+    /* Highlights block */
+    .highlights {
+      margin-top: 10px;
+      padding-top: 6px;
+      border-top: 1px solid rgba(148,163,253,0.16);
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .highlights-label {
+      font-size: 10px;
+      color: var(--text-subtle);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+    .highlights-list {
+      font-size: 11px;
+      color: var(--text-subtle);
+      padding-left: 14px;
+      margin: 0;
+    }
+    .highlights-list li {
+      margin-bottom: 1px;
     }
 
     .section-title {
@@ -248,13 +281,15 @@
       font-size: 9px;
       color: var(--text-subtle);
       text-align: left;
+      padding-bottom: 4px;
     }
 
     @media (max-width: 840px) {
-      body { padding: 16px 14px 26px; }
+      body { padding: 0 14px 24px; }
       .grid { grid-template-columns: 1fr; }
       .top-metrics { grid-template-columns: 1fr; }
       .calc-grid { grid-template-columns: 1fr; }
+      header { padding-top: 10px; }
     }
   </style>
 </head>
@@ -281,158 +316,166 @@
     </div>
   </header>
 
-  <div class="grid">
-    <!-- Left: main dashboard -->
-    <section class="card">
-      <div class="headline">Daily snapshot of UK electricity &amp; gas prices</div>
-      <p class="lede">
-        Concise, automatically generated summaries using official Ofgem publications
-        and public tariff data. No spin — just current headline numbers for analysts,
-        journalists and households.
-      </p>
+  <main>
+    <div class="grid">
+      <!-- Left: main dashboard -->
+      <section class="card">
+        <div class="headline">Daily snapshot of UK electricity &amp; gas prices</div>
+        <p class="lede">
+          A lightweight reference for current Ofgem price cap levels and public tariff feeds.
+          Designed for analysts, journalists and households who just want today’s numbers.
+        </p>
 
-      <div class="top-metrics">
-        <div class="metric">
-          <div class="metric-label">Price cap – Elec (avg)</div>
-          <div id="metric-elec" class="metric-value">-- p/kWh</div>
-          <div class="metric-caption">Typical direct debit customers, GB average.</div>
+        <div class="top-metrics">
+          <div class="metric">
+            <div class="metric-label">Price cap – Elec (avg)</div>
+            <div id="metric-elec" class="metric-value">-- p/kWh</div>
+            <div class="metric-caption">Typical direct debit customers, GB average.</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Price cap – Gas (avg)</div>
+            <div id="metric-gas" class="metric-value">-- p/kWh</div>
+            <div class="metric-caption">Typical direct debit customers, GB average.</div>
+          </div>
+          <div class="metric">
+            <div class="metric-label">Agile Elec – Today (avg)</div>
+            <div id="metric-agile" class="metric-value">N/A p/kWh</div>
+            <div class="metric-caption">From Octopus Agile half-hourly rates (if available).</div>
+          </div>
         </div>
-        <div class="metric">
-          <div class="metric-label">Price cap – Gas (avg)</div>
-          <div id="metric-gas" class="metric-value">-- p/kWh</div>
-          <div class="metric-caption">Typical direct debit customers, GB average.</div>
+
+        <div class="meta-line" id="ofgem-period">
+          Ofgem cap period: updating…
         </div>
-        <div class="metric">
-          <div class="metric-label">Agile Elec – Today (avg)</div>
-          <div id="metric-agile" class="metric-value">N/A p/kWh</div>
-          <div class="metric-caption">From Octopus Agile half-hourly rates (if available).</div>
+        <div class="meta-line" id="typical-bill-line">
+          Typical dual-fuel bill under current cap: calculating…
+        </div>
+        <div class="meta-line" id="latest-report">
+          Latest daily report: loading…
+        </div>
+
+        <!-- Today’s highlights (auto-filled from data) -->
+        <div class="highlights">
+          <div class="highlights-label">Today’s highlights</div>
+          <ul id="highlights-list" class="highlights-list">
+            <li>Loading latest summary…</li>
+          </ul>
+        </div>
+      </section>
+
+      <!-- Right: Agile + methodology -->
+      <aside class="card">
+        <div class="section-title">Cheapest Agile slots (today)</div>
+        <div class="section-text">
+          Based on Octopus Agile half-hourly unit rates (incl. VAT), when data is available.
+        </div>
+        <div id="agile-slots" class="section-text">Loading live slots…</div>
+        <ul id="agile-slots-list" class="agile-list"></ul>
+
+        <hr style="border: none; border-top: 1px solid rgba(148,163,253,0.16); margin: 10px 0;" />
+
+        <div class="section-title">How the numbers are calculated</div>
+        <ul class="list">
+          <li>Default tariff cap data scraped from Ofgem’s official “Energy price cap explained” page.</li>
+          <li>Agile prices from the public Octopus Energy API, when available.</li>
+          <li>All processing runs automatically via GitHub Actions; everything is reproducible.</li>
+          <li>If a live source fails, numbers are clearly marked as cached or fallback.</li>
+        </ul>
+      </aside>
+    </div>
+
+    <!-- Content rows -->
+    <div class="grid" style="margin-top: 16px;">
+      <section class="card">
+        <div class="section-title">What this site publishes</div>
+        <ul class="list">
+          <li>Daily summary of the Ofgem default tariff cap (current period, GB averages).</li>
+          <li>Octopus Agile average prices and cheapest half-hour slots (when data exists).</li>
+          <li>Human-readable daily snapshot pages for quick referencing.</li>
+          <li>Machine-readable JSON via <code>data/latest.json</code> for reuse.</li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <div class="section-title">What is ukenergydata.co.uk?</div>
+        <p class="section-text">
+          An independent, automated microsite turning raw UK energy data into clear, low-noise
+          daily signals. No paywall, no clickbait — just verifiable numbers from public sources.
+        </p>
+        <p class="section-text">
+          This project is experimental. Always confirm critical decisions against official Ofgem
+          publications or supplier tariffs.
+        </p>
+      </section>
+    </div>
+
+    <!-- Data sources & transparency -->
+    <div class="grid" style="margin-top: 16px;" id="data-sources">
+      <section class="card">
+        <div class="section-title">Data sources &amp; endpoints</div>
+        <ul class="list">
+          <li>
+            Ofgem default tariff cap:
+            <a href="https://www.ofgem.gov.uk/information-consumers/energy-advice-households/energy-price-cap-explained"
+               target="_blank" rel="noopener">official “Energy price cap explained”</a>.
+          </li>
+          <li>
+            Typical bill calculation:
+            Ofgem TDCV (2,700 kWh electricity, 11,500 kWh gas) applied to GB-average cap rates.
+          </li>
+          <li>
+            Octopus Agile electricity:
+            public Octopus Energy API (half-hourly unit rates), when available.
+          </li>
+          <li>
+            Latest machine-readable snapshot:
+            <code><a href="data/latest.json" target="_blank" rel="noopener">data/latest.json</a></code>.
+          </li>
+          <li>
+            Full source code:
+            <a href="https://github.com/youknowwho00o/ukenergydata-site"
+               target="_blank" rel="noopener">GitHub repository</a>.
+          </li>
+        </ul>
+      </section>
+
+      <section class="card">
+        <div class="section-title">Transparency</div>
+        <p class="section-text">
+          All numbers are generated automatically from reproducible scripts. If a live source fails,
+          the UI labels values as cached or fallback. Always cross-check against Ofgem publications
+          and supplier tariffs before making decisions.
+        </p>
+      </section>
+    </div>
+
+    <!-- Quick bill estimator -->
+    <section class="card" style="margin-top: 16px;">
+      <div class="section-title">Quick bill estimator (using current cap)</div>
+      <p class="section-text">
+        Estimate your annual and monthly cost on the default tariff cap. Uses the live GB-average
+        unit rates and standing charges from this site. This is a rough guide, not a quote.
+      </p>
+      <div class="calc-grid">
+        <div class="calc-input-wrap">
+          <div class="calc-label">Annual electricity usage (kWh)</div>
+          <input id="calc-elec-kwh" class="calc-input" type="number" min="0" step="50" />
+          <div class="calc-note">Typical TDCV: 2,700 kWh</div>
+        </div>
+        <div class="calc-input-wrap">
+          <div class="calc-label">Annual gas usage (kWh)</div>
+          <input id="calc-gas-kwh" class="calc-input" type="number" min="0" step="100" />
+          <div class="calc-note">Typical TDCV: 11,500 kWh</div>
         </div>
       </div>
-
-      <div class="meta-line" id="ofgem-period">
-        Ofgem cap period: updating…
+      <div id="calc-output" class="calc-output">
+        Waiting for live cap data…
       </div>
-      <div class="meta-line" id="typical-bill-line">
-        Typical dual-fuel bill under current cap: calculating…
-      </div>
-      <div class="meta-line" id="latest-report">
-        Latest daily report: loading…
+      <div class="calc-note">
+        Includes standing charges (GB-average, Direct Debit). Excludes discounts and regional variations.
       </div>
     </section>
-
-    <!-- Right: Agile + methodology -->
-    <aside class="card">
-      <div class="section-title">Cheapest Agile slots (today)</div>
-      <div class="section-text">
-        Based on Octopus Agile half-hourly unit rates (incl. VAT), when data is available.
-      </div>
-      <div id="agile-slots" class="section-text">Loading live slots…</div>
-      <ul id="agile-slots-list" class="agile-list"></ul>
-
-      <hr style="border: none; border-top: 1px solid rgba(148,163,253,0.16); margin: 10px 0;" />
-
-      <div class="section-title">How the numbers are calculated</div>
-      <ul class="list">
-        <li>Default tariff cap data scraped from Ofgem’s official “Energy price cap explained” page.</li>
-        <li>Agile prices from the public Octopus Energy API, when available.</li>
-        <li>All processing runs automatically via GitHub Actions; everything is reproducible.</li>
-        <li>If a live source fails, numbers are clearly marked as N/A or fallback.</li>
-      </ul>
-    </aside>
-  </div>
-
-  <!-- Lower content blocks -->
-  <div class="grid" style="margin-top: 16px;">
-    <section class="card">
-      <div class="section-title">What this site publishes</div>
-      <ul class="list">
-        <li>Daily summary of the Ofgem default tariff cap (current period, GB averages).</li>
-        <li>Octopus Agile average prices and cheapest half-hour slots (when data exists).</li>
-        <li>Human-readable daily snapshot pages for quick referencing.</li>
-        <li>Machine-readable JSON via <code>data/latest.json</code> for reuse.</li>
-      </ul>
-    </section>
-
-    <section class="card">
-      <div class="section-title">What is ukenergydata.co.uk?</div>
-      <p class="section-text">
-        An independent, automated microsite turning raw UK energy data into clear, low-noise
-        daily signals. No paywall, no clickbait — just verifiable numbers from public sources.
-      </p>
-      <p class="section-text">
-        This project is experimental. Always confirm critical decisions against official Ofgem
-        publications or supplier tariffs.
-      </p>
-    </section>
-  </div>
-
-  <!-- Data sources & transparency -->
-  <div class="grid" style="margin-top: 16px;" id="data-sources">
-    <section class="card">
-      <div class="section-title">Data sources &amp; endpoints</div>
-      <ul class="list">
-        <li>
-          Ofgem default tariff cap:
-          scraped from
-          <a href="https://www.ofgem.gov.uk/information-consumers/energy-advice-households/energy-price-cap-explained"
-             target="_blank" rel="noopener">“Energy price cap explained”</a>.
-        </li>
-        <li>
-          Typical bill calculation:
-          Ofgem TDCV (2,700 kWh electricity, 11,500 kWh gas) applied to GB-average cap rates.
-        </li>
-        <li>
-          Octopus Agile electricity:
-          public Octopus Energy API (half-hourly unit rates), when available.
-        </li>
-        <li>
-          Latest machine-readable snapshot:
-          <code><a href="data/latest.json" target="_blank" rel="noopener">data/latest.json</a></code>.
-        </li>
-        <li>
-          Full site source code:
-          <a href="https://github.com/youknowwho00o/ukenergydata-site"
-             target="_blank" rel="noopener">GitHub repository</a>.
-        </li>
-      </ul>
-    </section>
-
-    <section class="card">
-      <div class="section-title">Transparency</div>
-      <p class="section-text">
-        All numbers are generated automatically from reproducible scripts. If a live source fails,
-        the UI will label values as cached or fallback. Always cross-check against official Ofgem
-        publications and supplier tariffs before making decisions.
-      </p>
-    </section>
-  </div>
-
-  <!-- Quick bill estimator card -->
-  <section class="card" style="margin-top: 16px;">
-    <div class="section-title">Quick bill estimator (using current cap)</div>
-    <p class="section-text">
-      Estimate your annual and monthly cost on the default tariff cap. Uses the live GB-average
-      unit rates and standing charges from this site. This is a rough guide, not a quote.
-    </p>
-    <div class="calc-grid">
-      <div class="calc-input-wrap">
-        <div class="calc-label">Annual electricity usage (kWh)</div>
-        <input id="calc-elec-kwh" class="calc-input" type="number" min="0" step="50" />
-        <div class="calc-note">Typical TDCV: 2,700 kWh</div>
-      </div>
-      <div class="calc-input-wrap">
-        <div class="calc-label">Annual gas usage (kWh)</div>
-        <input id="calc-gas-kwh" class="calc-input" type="number" min="0" step="100" />
-        <div class="calc-note">Typical TDCV: 11,500 kWh</div>
-      </div>
-    </div>
-    <div id="calc-output" class="calc-output">
-      Waiting for live cap data…
-    </div>
-    <div class="calc-note">
-      Includes standing charges (GB-average, Direct Debit). Excludes any discounts / regional variations.
-    </div>
-  </section>
+  </main>
 
   <footer>
     &copy; ukenergydata.co.uk · Generated automatically from public data sources.
@@ -445,28 +488,23 @@ let ofgemRates = null;
 function updateCalculator() {
   const out = document.getElementById('calc-output');
   if (!out) return;
-
   if (!ofgemRates) {
     out.textContent = 'Waiting for live cap data…';
     return;
   }
-
   const elecInput = document.getElementById('calc-elec-kwh');
   const gasInput = document.getElementById('calc-gas-kwh');
   const e = parseFloat(elecInput.value) || 0;
   const g = parseFloat(gasInput.value) || 0;
-
   if (e <= 0 && g <= 0) {
     out.textContent = 'Enter your annual usage in kWh to see an estimate.';
     return;
   }
-
   const DAYS = 365;
   const elecAnnual = ofgemRates.elec_unit * e + ofgemRates.elec_sc * DAYS;
   const gasAnnual = ofgemRates.gas_unit * g + ofgemRates.gas_sc * DAYS;
   const dualAnnual = elecAnnual + gasAnnual;
   const dualMonthly = dualAnnual / 12;
-
   out.innerHTML =
     `Estimated annual cost: <strong>£${dualAnnual.toFixed(0)}</strong>` +
     ` (~£${dualMonthly.toFixed(0)}/month)` +
@@ -479,13 +517,13 @@ async function loadDashboard() {
     const res = await fetch('data/latest.json', { cache: 'no-store' });
     const data = await res.json();
 
-    // --- Ofgem ---
     const ofgem = data.ofgem || {};
     const statusOfgem = document.getElementById('status-ofgem');
     const elecEl = document.getElementById('metric-elec');
     const gasEl = document.getElementById('metric-gas');
     const periodEl = document.getElementById('ofgem-period');
     const typicalBillEl = document.getElementById('typical-bill-line');
+    const highlightsEl = document.getElementById('highlights-list');
 
     if (ofgem.electricity_unit_avg && ofgem.gas_unit_avg) {
       elecEl.textContent = ofgem.electricity_unit_avg.toFixed(2) + ' p/kWh';
@@ -501,13 +539,12 @@ async function loadDashboard() {
           statusOfgem.classList.add('warn');
           statusOfgem.classList.remove('error');
         } else {
-          statusOfgem.textContent = 'Ofgem cap: fallback values (check latest Ofgem docs)';
+          statusOfgem.textContent = 'Ofgem cap: fallback values (check Ofgem docs)';
           statusOfgem.classList.add('warn');
           statusOfgem.classList.remove('error');
         }
       }
 
-      // prepare calculator rates in £
       ofgemRates = {
         elec_unit: ofgem.electricity_unit_avg / 100.0,
         gas_unit: ofgem.gas_unit_avg / 100.0,
@@ -524,7 +561,6 @@ async function loadDashboard() {
       }
     }
 
-    // --- Typical bill line (from backend precomputed) ---
     const tb = data.typical_bill || null;
     if (tb && tb.dual_annual_gbp) {
       const yr = tb.dual_annual_gbp.toFixed(0);
@@ -535,7 +571,7 @@ async function loadDashboard() {
       typicalBillEl.textContent = 'Typical dual-fuel bill under cap: not available.';
     }
 
-    // Pre-fill calculator with TDCV if present
+    // Prefill calculator with TDCV
     const elecInput = document.getElementById('calc-elec-kwh');
     const gasInput = document.getElementById('calc-gas-kwh');
     if (elecInput && gasInput) {
@@ -543,16 +579,12 @@ async function loadDashboard() {
       const defaultGas = tb?.tdcv?.gas_kwh || 11500;
       elecInput.value = defaultElec;
       gasInput.value = defaultGas;
-    }
-
-    updateCalculator();
-
-    if (elecInput && gasInput) {
       elecInput.addEventListener('input', updateCalculator);
       gasInput.addEventListener('input', updateCalculator);
     }
+    updateCalculator();
 
-    // --- Agile summary ---
+    // Agile summary
     const agile = data.agile || {};
     const statusAgile = document.getElementById('status-agile');
     const agileAvgEl = document.getElementById('metric-agile');
@@ -565,7 +597,6 @@ async function loadDashboard() {
         statusAgile.textContent = 'Octopus Agile: today data loaded';
         statusAgile.classList.remove('warn', 'error');
       }
-
       if (Array.isArray(agile.cheapest_slots) && agile.cheapest_slots.length > 0) {
         agileSlotsText.textContent = 'Cheapest half-hour slots (local time):';
         agileSlotsList.innerHTML = '';
@@ -588,12 +619,38 @@ async function loadDashboard() {
       }
     }
 
-    // --- Latest report link ---
+    // Latest report link
     const latestReportEl = document.getElementById('latest-report');
     if (data.date && latestReportEl) {
       latestReportEl.innerHTML =
         `Latest daily report: <a href="reports/${data.date}.html">view snapshot (${data.date})</a>` +
         (data.generated_at_utc ? ` · generated ${data.generated_at_utc}` : '');
+    }
+
+    // Highlights (simple editorial-style bullets)
+    if (highlightsEl) {
+      const items = [];
+      if (tb && tb.dual_annual_gbp) {
+        items.push(
+          `Typical dual-fuel household bill is about £${tb.dual_annual_gbp.toFixed(0)}/year `
+          + `(~£${tb.dual_monthly_gbp.toFixed(0)}/month) under the current cap.`
+        );
+      }
+      if (agile.has_data && agile.avg != null) {
+        items.push(
+          `Octopus Agile electricity averages ${agile.avg.toFixed(2)} p/kWh today `
+          + `(vs cap ${ofgem.electricity_unit_avg?.toFixed(2) || '--'} p/kWh).`
+        );
+      } else {
+        items.push(`No Octopus Agile half-hourly data available for today.`);
+      }
+      items.push(`Data last generated at ${data.generated_at_utc || 'N/A'} (UTC).`);
+      highlightsEl.innerHTML = '';
+      items.forEach(t => {
+        const li = document.createElement('li');
+        li.textContent = t;
+        highlightsEl.appendChild(li);
+      });
     }
 
   } catch (err) {
@@ -609,6 +666,10 @@ async function loadDashboard() {
     }
     const tb = document.getElementById('typical-bill-line');
     if (tb) tb.textContent = 'Typical dual-fuel bill under cap: unavailable.';
+    const hl = document.getElementById('highlights-list');
+    if (hl) {
+      hl.innerHTML = '<li>Unable to load latest snapshot.</li>';
+    }
     const out = document.getElementById('calc-output');
     if (out) out.textContent = 'Unable to load cap data for calculator.';
   }
