@@ -1,6 +1,6 @@
 {
-  "date": "2025-11-10",
-  "generated_at_utc": "2025-11-10 23:11 UTC",
+  "date": "2025-11-11",
+  "generated_at_utc": "2025-11-11 00:59 UTC",
   "ofgem": {
     "period": "1 Oct 2025 \u2013 31 Dec 2025 (Ofgem default tariff cap)",
     "electricity_unit_avg": 25.73,
@@ -18,5 +18,16 @@
     "low": null,
     "high": null,
     "cheapest_slots": []
+  },
+  "typical_bill": {
+    "tdcv": {
+      "electricity_kwh": 2700,
+      "gas_kwh": 11500
+    },
+    "elec_annual_gbp": 880.86,
+    "gas_annual_gbp": 837.45,
+    "dual_annual_gbp": 1718.31,
+    "dual_monthly_gbp": 143.19,
+    "note": "Approximate bill for a typical dual-fuel household on the GB-average Ofgem default tariff cap (Direct Debit), based on Ofgem TDCV. Actual bills vary with usage and region."
   }
 }
