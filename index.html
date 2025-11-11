@@ -227,7 +227,8 @@
     <nav>
       <a href="index.html" class="active">Dashboard</a>
       <a href="reports/index.html">Daily Reports</a>
-      <a href="https://github.com/youknowwho00o/ukenergydata-site">Data Sources</a>
+      <!-- 现在跳转到本页下方的 Data Sources 区块 -->
+      <a href="#data-sources">Data Sources</a>
     </nav>
     <div class="status-bar">
       <span id="status-ofgem" class="status-pill">Ofgem cap: loading…</span>
@@ -267,7 +268,7 @@
         Ofgem cap period: updating…
       </div>
       <div class="meta-line" id="typical-bill-line">
-        Typical dual-fuel bill under cap: calculating…
+        Typical dual-fuel bill under current cap: calculating…
       </div>
       <div class="meta-line" id="latest-report">
         Latest daily report: loading…
@@ -316,6 +317,47 @@
       <p class="section-text">
         This project is experimental. Always confirm critical decisions against official Ofgem
         publications or supplier tariffs.
+      </p>
+    </section>
+  </div>
+
+  <!-- Data Sources block (anchor target) -->
+  <div class="grid" style="margin-top: 16px;" id="data-sources">
+    <section class="card">
+      <div class="section-title">Data sources &amp; endpoints</div>
+      <ul class="list">
+        <li>
+          Ofgem default tariff cap:
+          scraped from
+          <a href="https://www.ofgem.gov.uk/information-consumers/energy-advice-households/energy-price-cap-explained"
+             target="_blank" rel="noopener">“Energy price cap explained”</a>.
+        </li>
+        <li>
+          Typical bill calculation:
+          Ofgem TDCV (2,700 kWh electricity, 11,500 kWh gas) applied to GB-average cap rates.
+        </li>
+        <li>
+          Octopus Agile electricity:
+          public Octopus Energy API (half-hourly unit rates), when available.
+        </li>
+        <li>
+          Latest machine-readable snapshot:
+          <code><a href="data/latest.json" target="_blank" rel="noopener">data/latest.json</a></code>.
+        </li>
+        <li>
+          Full site source code:
+          <a href="https://github.com/youknowwho00o/ukenergydata-site"
+             target="_blank" rel="noopener">GitHub repository</a>.
+        </li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <div class="section-title">Transparency</div>
+      <p class="section-text">
+        All numbers are generated automatically from reproducible scripts. If a live source fails,
+        the UI will label values as cached or fallback. Always cross-check against official Ofgem
+        publications and supplier tariffs before making decisions.
       </p>
     </section>
   </div>
