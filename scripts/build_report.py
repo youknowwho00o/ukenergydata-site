@@ -3,17 +3,17 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from datetime import datetime
-from typing import Dict, Optional
+from typing import Dict, Optional, List
 
 from .fetch_ofgem import fetch_ofgem_cap_summary
 from .fetch_octopus import fetch_agile_rates_for_today, summarize_agile
+from .ofgem_history import OFGEM_CAP_HISTORY
 
 ROOT = Path(__file__).resolve().parent.parent
 REPORTS_DIR = ROOT / "reports"
 DATA_DIR = ROOT / "data"
 
 # Ofgem typical domestic consumption values (TDCV), dual fuel, Direct Debit
-# Ref: Ofgem "Average gas and electricity use explained"
 TDCV_ELEC_KWH = 2700
 TDCV_GAS_KWH = 11500
 
@@ -35,68 +35,103 @@ def ensure_reports_index() -> None:
   <title>UK Energy Data – Daily Reports</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <style>
+    :root {
+      --bg: #020817;
+      --bg-card: #070f23;
+      --border-subtle: rgba(148, 163, 253, 0.16);
+      --accent: #38bdf8;
+      --text-main: #e5e7eb;
+      --text-subtle: #9ca3af;
+      --radius-xl: 20px;
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, -system-ui, sans-serif;
+    }
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #020712;
-      color: #f5f5f7;
-      padding: 24px;
-      max-width: 900px;
-      margin: 0 auto;
+      margin: 0;
+      padding: 24px 18px 32px;
+      font-family: var(--font-sans);
+      background: radial-gradient(circle at top, #020817 0, #000 55%);
+      color: var(--text-main);
     }
-    h1 {
-      font-size: 24px;
-      margin-bottom: 4px;
+    .page { max-width: 960px; margin: 0 auto; }
+    .brand { display: flex; align-items: center; gap: 8px; }
+    .dot { width: 9px; height: 9px; border-radius: 999px; background: var(--accent); box-shadow: 0 0 10px var(--accent); }
+    h1 { font-size: 22px; margin: 0; }
+    .subtitle { font-size: 12px; color: var(--text-subtle); margin-top: 4px; }
+    nav { margin-top: 8px; font-size: 12px; display: flex; gap: 14px; }
+    nav a { color: var(--text-subtle); text-decoration: none; }
+    nav a:hover { text-decoration: underline; }
+    nav a.active { color: var(--accent); }
+    .card {
+      background: var(--bg-card);
+      border-radius: var(--radius-xl);
+      border: 1px solid var(--border-subtle);
+      padding: 14px 14px 10px;
+      margin-top: 10px;
     }
-    p {
-      font-size: 13px;
-      color: #9ca3af;
-      margin-top: 0;
-      margin-bottom: 16px;
-    }
-    a {
-      color: #35c1ff;
-      text-decoration: none;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
-    ul {
+    .card-title { font-size: 14px; font-weight: 600; margin: 0 0 4px; }
+    .card-text { font-size: 11px; color: var(--text-subtle); margin: 0 0 4px; }
+    ul#reports-list {
       list-style: none;
       padding-left: 0;
-      margin: 0;
-      font-size: 13px;
+      margin: 4px 0 0;
+      font-size: 12px;
     }
-    li {
-      padding: 7px 9px;
+    ul#reports-list li {
+      padding: 6px 8px;
       border-radius: 10px;
-      background: rgba(10, 16, 32, 0.98);
-      border: 1px solid rgba(148, 163, 253, 0.18);
-      margin-bottom: 6px;
+      border: 1px solid rgba(148,163,253,0.18);
+      background: rgba(5,10,25,0.98);
+      margin-bottom: 5px;
       display: flex;
       justify-content: space-between;
-      gap: 10px;
+      gap: 8px;
       align-items: baseline;
     }
-    .meta {
-      font-size: 11px;
-      color: #9ca3af;
-      white-space: nowrap;
+    ul#reports-list a { color: var(--accent); }
+    ul#reports-list a:hover { text-decoration: underline; }
+    .meta { font-size: 10px; color: var(--text-subtle); white-space: nowrap; }
+    footer {
+      margin-top: 18px;
+      font-size: 9px;
+      color: var(--text-subtle);
     }
-    .back {
-      margin-top: 16px;
-      font-size: 11px;
-      color: #9ca3af;
+    @media (max-width: 640px) {
+      body { padding: 18px 12px 24px; }
+      ul#reports-list li { flex-direction: column; align-items: flex-start; }
+      .meta { margin-top: 2px; }
     }
   </style>
 </head>
 <body>
-  <h1>Daily Energy Price Reports</h1>
-  <p>Auto-generated snapshots of Ofgem price cap and Octopus Agile data.</p>
-  <ul id="reports-list">
-  </ul>
-  <div class="back">
-    &larr; <a href="../index.html">Back to main dashboard</a>
-  </div>
+<div class="page">
+  <header>
+    <div class="brand">
+      <div class="dot"></div>
+      <h1>Daily Energy Price Reports</h1>
+    </div>
+    <div class="subtitle">
+      Archived daily snapshots of Ofgem price cap levels and Octopus Agile data.
+      Generated automatically from public sources.
+    </div>
+    <nav>
+      <a href="../index.html">&larr; Back to dashboard</a>
+      <a href="index.html" class="active">Reports archive</a>
+      <a href="https://github.com/youknowwho00o/ukenergydata-site" target="_blank" rel="noopener">Source on GitHub</a>
+    </nav>
+  </header>
+  <section class="card">
+    <div class="card-title">Browse daily snapshots</div>
+    <p class="card-text">
+      Each report is a static HTML file containing the Ofgem cap snapshot, Octopus Agile summary
+      and the calculated typical-bill estimate for that day.
+    </p>
+    <ul id="reports-list">
+    </ul>
+  </section>
+  <footer>
+    &copy; ukenergydata.co.uk · Auto-generated from public data sources.
+  </footer>
+</div>
 </body>
 </html>
 """
@@ -104,13 +139,7 @@ def ensure_reports_index() -> None:
 
 
 def compute_typical_bill(ofgem: Dict) -> Optional[Dict]:
-    """
-    Compute an approximate typical dual-fuel bill under the current cap.
-
-    - Uses Ofgem TDCV: 2700 kWh elec, 11500 kWh gas per year
-    - Uses GB-average Direct Debit unit + standing rates from `ofgem`.
-    - Returns None if required fields are missing.
-    """
+    """Compute typical dual-fuel bill under current cap using Ofgem TDCV."""
     try:
         elec_unit_p = float(ofgem["electricity_unit_avg"])
         gas_unit_p = float(ofgem["gas_unit_avg"])
@@ -144,36 +173,93 @@ def compute_typical_bill(ofgem: Dict) -> Optional[Dict]:
     }
 
 
+def build_cap_history_with_current(ofgem: Dict) -> List[Dict]:
+    """
+    Take manual OFGEM_CAP_HISTORY and append current cap if not present.
+    Returns a list ordered as given (roughly chronological).
+    """
+    history: List[Dict] = [dict(h) for h in OFGEM_CAP_HISTORY]
+
+    current = {
+        "period": ofgem.get("period"),
+        "label": ofgem.get("period"),
+        "electricity_unit_avg": ofgem.get("electricity_unit_avg"),
+        "gas_unit_avg": ofgem.get("gas_unit_avg"),
+    }
+
+    if current["period"] and current["electricity_unit_avg"] and current["gas_unit_avg"]:
+        if not any(h.get("period") == current["period"] for h in history):
+            history.append(current)
+
+    # 过滤掉缺字段的
+    history = [
+        h for h in history
+        if h.get("electricity_unit_avg") is not None and h.get("gas_unit_avg") is not None
+    ]
+
+    return history
+
+
+def compute_cap_changes(history: List[Dict]) -> Optional[Dict]:
+    """
+    Given cap history including current period as last entry,
+    compute percentage change vs previous period and vs historical peak.
+    """
+    if len(history) < 2:
+        return None
+
+    prev = history[-2]
+    curr = history[-1]
+
+    def pct(curr_v: float, prev_v: float) -> Optional[float]:
+        try:
+            if prev_v <= 0:
+                return None
+            return round((curr_v - prev_v) / prev_v * 100.0, 1)
+        except Exception:
+            return None
+
+    elec_change = pct(curr["electricity_unit_avg"], prev["electricity_unit_avg"])
+    gas_change = pct(curr["gas_unit_avg"], prev["gas_unit_avg"])
+
+    # vs historical peak (unit rates only)
+    peak = max(history, key=lambda h: h["electricity_unit_avg"])
+    peak_label = peak.get("label") or peak.get("period")
+    peak_elec_change = pct(curr["electricity_unit_avg"], peak["electricity_unit_avg"])
+
+    return {
+        "prev_label": prev.get("label") or prev.get("period"),
+        "elec_vs_prev_pct": elec_change,
+        "gas_vs_prev_pct": gas_change,
+        "peak_label": peak_label,
+        "elec_vs_peak_pct": peak_elec_change,
+    }
+
+
 def append_report_link(date_str: str, ofgem: Dict, agile: Dict, typical_bill: Optional[Dict]) -> None:
-    """
-    Insert a line for this report into reports/index.html (if not already present).
-    Shows a small meta summary (cap + typical bill + Agile avg).
-    """
+    """Insert a line for this report into reports/index.html (if not already present)."""
     index_file = REPORTS_DIR / "index.html"
     if not index_file.exists():
         ensure_reports_index()
 
     html = index_file.read_text(encoding="utf-8")
-    marker_start = '<ul id="reports-list">'
-    marker_end = '</ul>'
-
-    if marker_start not in html or marker_end not in html:
-        # broken template; don't risk corrupting
+    marker = '<ul id="reports-list">'
+    if marker not in html:
         return
 
-    # build meta text
+    # meta summary
     parts = []
-    elec = ofgem.get("electricity_unit_avg")
-    gas = ofgem.get("gas_unit_avg")
-    if elec and gas:
-        parts.append(f"Cap {elec:.2f}p elec / {gas:.2f}p gas")
+    eu = ofgem.get("electricity_unit_avg")
+    gu = ofgem.get("gas_unit_avg")
+    if eu and gu:
+        parts.append(f"{eu:.2f}p elec / {gu:.2f}p gas")
     if typical_bill and typical_bill.get("dual_annual_gbp"):
-        parts.append(f"Typical ~£{typical_bill['dual_annual_gbp']:.0f}/yr")
+        parts.append(f"typical ~£{typical_bill['dual_annual_gbp']:.0f}/yr")
     if agile.get("has_data") and agile.get("avg") is not None:
         parts.append(f"Agile {agile['avg']:.2f}p")
-
     meta = " · ".join(parts) if parts else ""
-    line = f'<li><a href="{date_str}.html">{date_str} – Daily report</a>'
+
+    line = f'<li><a href="{date_str}.html">{date_str}</a>'
     if meta:
         line += f'<span class="meta">{meta}</span>'
     line += "</li>"
@@ -181,15 +267,9 @@ def append_report_link(date_str: str, ofgem: Dict, agile: Dict, typical_bill: Op
     if line in html:
         return
 
-    before, rest = html.split(marker_start, 1)
-    list_block, after = rest.split(marker_end, 1)
-
-    # keep most-recent-first
-    rows = [r for r in list_block.strip().splitlines() if r.strip()]
-    rows.insert(0, "    " + line)
-    new_list = "\n".join(rows) + ("\n" if rows else "")
-
-    new_html = before + marker_start + "\n" + new_list + marker_end + after
+    before, after = html.split(marker, 1)
+    # 插在列表首行（最新在上）
+    new_html = before + marker + "\n    " + line + after
     index_file.write_text(new_html, encoding="utf-8")
 
 
@@ -205,6 +285,10 @@ def build_daily_report() -> None:
     agile = summarize_agile(agile_raw)
     typical_bill = compute_typical_bill(ofgem)
 
+    # 历史 + 较前期对比
+    cap_history = build_cap_history_with_current(ofgem)
+    cap_change = compute_cap_changes(cap_history)
+
     generated_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
 
     # --- HTML daily report ---
@@ -212,7 +296,7 @@ def build_daily_report() -> None:
         "<!DOCTYPE html>",
         "<html lang='en'>",
         "<head>",
-        "  <meta charset='utf-8' />",
+        f"  <meta charset='utf-8' />",
         f"  <title>UK Energy Data – Daily Report {today}</title>",
         "  <meta name='viewport' content='width=device-width, initial-scale=1.0' />",
         "  <style>",
@@ -240,6 +324,27 @@ def build_daily_report() -> None:
         "</ul>",
     ]
 
+    if cap_change:
+        lines += [
+            "<p>",
+            f"Compared with <strong>{cap_change['prev_label']}</strong>: ",
+            f"electricity ",
+            ("+" if (cap_change['elec_vs_prev_pct'] or 0) > 0 else ""),
+            f"{cap_change['elec_vs_prev_pct']}%, ",
+            f"gas ",
+            ("+" if (cap_change['gas_vs_prev_pct'] or 0) > 0 else ""),
+            f"{cap_change['gas_vs_prev_pct']}%.",
+            "</p>",
+        ]
+        if cap_change.get("elec_vs_peak_pct") is not None:
+            lines += [
+                "<p>",
+                f"Electricity unit rate is {cap_change['elec_vs_peak_pct']}% ",
+                "vs the peak period ",
+                f"({cap_change['peak_label']}).",
+                "</p>",
+            ]
+
     if typical_bill:
         tb = typical_bill
         lines += [
@@ -260,7 +365,7 @@ def build_daily_report() -> None:
             "</em></p>",
         ]
 
-    # --- Agile section ---
+    # Agile
     lines += ["<h2>Octopus Agile electricity – today</h2>"]
     if agile["has_data"]:
         lines += [
@@ -278,7 +383,7 @@ def build_daily_report() -> None:
     else:
         lines.append("<p>Agile data not available for this day.</p>")
 
-    # --- Notes ---
+    # Notes
     lines += [
         "<h2>Notes</h2>",
         "<ul>",
@@ -295,9 +400,9 @@ def build_daily_report() -> None:
     outfile.write_text("\n".join(lines), encoding="utf-8")
     print(f"[ok] generated report: {outfile}")
 
-    # --- latest.json for dashboard consumption ---
+    # --- latest.json for dashboard ---
     DATA_DIR.mkdir(exist_ok=True)
-    latest = {
+    latest: Dict = {
         "date": today,
         "generated_at_utc": generated_at,
         "ofgem": ofgem,
@@ -305,10 +410,17 @@ def build_daily_report() -> None:
     }
     if typical_bill:
         latest["typical_bill"] = typical_bill
+    if cap_change:
+        latest["ofgem"]["change"] = cap_change
 
     latest_path = DATA_DIR / "latest.json"
     latest_path.write_text(json.dumps(latest, indent=2), encoding="utf-8")
     print(f"[ok] wrote {latest_path}")
+
+    # --- write cap history json (for trend chart) ---
+    (DATA_DIR / "ofgem_history.json").write_text(
+        json.dumps(cap_history, indent=2), encoding="utf-8"
+    )
 
     # --- update reports index ---
     append_report_link(today, ofgem, agile, typical_bill)
