@@ -1,238 +1,249 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8">
-  <title>UK Energy Data — Live Ofgem & Agile Insights</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>UK Energy Data</title>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <style>
     :root {
-      --bg: #031026;
-      --card: #071a3a;
-      --text: #e6f0ff;
-      --accent: #3ecbff;
-      --subtle: #9bb4d0;
+      --bg: #020d1e;
+      --card: #061a33;
+      --text: #e4f1ff;
+      --accent: #19a1ff;
+      --muted: #a0b9d6;
     }
+
     body {
-      font-family: "Inter", system-ui, sans-serif;
-      background: var(--bg);
+      font-family: "Inter", "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top, #031b36 0%, #000e21 100%);
       color: var(--text);
       margin: 0;
+      padding: 0;
       line-height: 1.6;
     }
-    header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      background: #051732;
-      padding: 12px 28px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-    }
-    header h1 {
-      font-size: 22px;
-      font-weight: 700;
-    }
-    nav a {
-      color: var(--text);
-      margin-left: 18px;
-      text-decoration: none;
-      opacity: 0.8;
-    }
-    nav a:hover { opacity: 1; color: var(--accent); }
 
-    main {
-      max-width: 1000px;
-      margin: 32px auto;
-      padding: 0 20px;
+    header {
+      background: rgba(3, 20, 40, 0.9);
+      padding: 14px 32px;
       display: flex;
-      flex-direction: column;
-      gap: 24px;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid #083663;
     }
+
+    .title {
+      font-weight: 700;
+      font-size: 1.4rem;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--accent);
+    }
+
+    nav a {
+      color: var(--muted);
+      margin-left: 20px;
+      text-decoration: none;
+      transition: 0.2s;
+      font-weight: 500;
+    }
+
+    nav a:hover {
+      color: var(--accent);
+    }
+
+    .container {
+      max-width: 1100px;
+      margin: 2rem auto;
+      padding: 0 1rem;
+    }
+
     .card {
       background: var(--card);
       border-radius: 16px;
-      padding: 24px;
-      box-shadow: 0 0 20px rgba(0, 100, 255, 0.05);
+      padding: 1.5rem 2rem;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 0 25px rgba(0, 40, 80, 0.25);
     }
-    h2 {
-      font-size: 20px;
-      margin-top: 0;
-      margin-bottom: 10px;
+
+    h1, h2, h3 {
       color: var(--accent);
     }
-    .big {
-      font-size: 32px;
-      font-weight: 700;
+
+    .stats {
+      display: flex;
+      justify-content: space-between;
+      gap: 1.5rem;
+      flex-wrap: wrap;
     }
-    .grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-      gap: 16px;
+
+    .stat-box {
+      flex: 1 1 30%;
+      background: rgba(255, 255, 255, 0.05);
+      border-radius: 12px;
+      padding: 1rem 1.5rem;
+      text-align: center;
     }
-    input {
-      width: 100%;
-      padding: 8px;
-      border-radius: 8px;
-      border: none;
-      background: #0b254f;
-      color: #fff;
-      margin-bottom: 8px;
+
+    .stat-box h3 {
+      font-size: 1.6rem;
+      margin: 0.2rem 0;
     }
+
     footer {
       text-align: center;
-      font-size: 13px;
-      color: #9bb4d0;
-      margin: 40px 0;
+      font-size: 0.8rem;
+      color: #6e89a6;
+      margin: 3rem 0 1.5rem;
     }
-    a { color: var(--accent); }
-    canvas { margin-top: 16px; }
+
+    input {
+      background: rgba(255, 255, 255, 0.08);
+      color: white;
+      border: none;
+      padding: 6px 10px;
+      border-radius: 8px;
+      width: 120px;
+      margin: 4px 0;
+    }
+
+    canvas {
+      margin-top: 1rem;
+    }
   </style>
 </head>
-
 <body>
   <header>
-    <h1>⚡ UK Energy Data</h1>
+    <div class="title">⚡ UK Energy Data</div>
     <nav>
       <a href="#">Dashboard</a>
-      <a href="reports/index.html">Daily Reports</a>
-      <a href="#sources">Data Sources</a>
+      <a href="reports/">Daily Reports</a>
+      <a href="data/">Data Sources</a>
     </nav>
   </header>
 
-  <main>
+  <div class="container">
     <section class="card">
-      <h2>Daily snapshot of UK electricity & gas prices</h2>
-      <div id="snapshot">Loading...</div>
+      <h1>Daily snapshot of UK electricity & gas prices</h1>
+      <div class="stats">
+        <div class="stat-box">
+          <div>Electricity (avg)</div>
+          <h3 id="elec">--</h3>
+          <small>p/kWh</small>
+        </div>
+        <div class="stat-box">
+          <div>Gas (avg)</div>
+          <h3 id="gas">--</h3>
+          <small>p/kWh</small>
+        </div>
+      </div>
+      <p id="period" style="margin-top:1rem; color:var(--muted)">Loading latest Ofgem cap period...</p>
+      <p id="bill" style="color:var(--muted)"></p>
     </section>
 
     <section class="card">
       <h2>Quick bill estimator (using current cap)</h2>
-      <label>Annual electricity usage (kWh)</label>
-      <input id="elecInput" type="number" value="2700">
-      <label>Annual gas usage (kWh)</label>
-      <input id="gasInput" type="number" value="11500">
-      <p id="billOutput" style="margin-top:8px;">Loading...</p>
+      <label>Annual electricity usage (kWh): </label>
+      <input type="number" id="elecUsage" value="2700" /> <br />
+      <label>Annual gas usage (kWh): </label>
+      <input type="number" id="gasUsage" value="11500" /> <br />
+      <p id="estimate"></p>
     </section>
 
     <section class="card">
       <h2>GB Average Ofgem Price Cap (last 12 months)</h2>
       <canvas id="capChart" height="120"></canvas>
-      <p id="chartStatus" style="font-size:13px;opacity:0.6;">Loading...</p>
+      <p id="chartStatus" style="color: var(--muted);"></p>
     </section>
-
-    <section class="card" id="sources">
-      <h2>Data sources & transparency</h2>
-      <ul>
-        <li>Ofgem default tariff cap: official “<a href="https://www.ofgem.gov.uk/information-consumers/energy-advice-households/energy-price-cap-explained" target="_blank">Energy price cap explained</a>”.</li>
-        <li>Agile prices: public <a href="https://api.octopus.energy" target="_blank">Octopus Energy API</a>.</li>
-        <li>Machine-readable data: <a href="data/latest.json">data/latest.json</a> and <a href="data/ofgem_history.json">data/ofgem_history.json</a>.</li>
-      </ul>
-    </section>
-  </main>
+  </div>
 
   <footer>
-    © ukenergydata.co.uk — Automatically generated from public data sources.
+    © ukenergydata.co.uk — Generated automatically from public data sources.
   </footer>
 
-<script>
-// --- Load latest snapshot ---
-fetch('data/latest.json')
-  .then(r => r.json())
-  .then(js => {
-    const s = js.ofgem;
-    const bill = js.typical_bill;
-    document.getElementById('snapshot').innerHTML = `
-      <div class="grid">
-        <div><div class="big">${s.electricity_unit_avg} p/kWh</div><div>Electricity (avg)</div></div>
-        <div><div class="big">${s.gas_unit_avg} p/kWh</div><div>Gas (avg)</div></div>
-      </div>
-      <p>Ofgem cap period: ${s.period}<br>
-      Typical dual-fuel bill: £${bill.dual_annual_gbp.toFixed(0)}/year (~£${bill.dual_monthly_gbp.toFixed(0)}/month).</p>
-      <p style="opacity:0.7;font-size:13px;">Last updated ${js.generated_at_utc}</p>
-    `;
-    updateBill();
-  });
-
-// --- Bill Estimator ---
-function updateBill() {
-  fetch('data/latest.json')
-    .then(r => r.json())
-    .then(js => {
-      const e = parseFloat(document.getElementById('elecInput').value);
-      const g = parseFloat(document.getElementById('gasInput').value);
-      const eu = js.ofgem.electricity_unit_avg / 100;
-      const gu = js.ofgem.gas_unit_avg / 100;
-      const es = js.ofgem.elec_standing_avg * 365;
-      const gs = js.ofgem.gas_standing_avg * 365;
-      const elec = e * eu + es;
-      const gas = g * gu + gs;
-      const total = elec + gas;
-      document.getElementById('billOutput').innerHTML =
-        `Estimated annual cost: <b>£${total.toFixed(0)}</b> (~£${(total/12).toFixed(0)}/month)
-        · Elec £${elec.toFixed(0)} · Gas £${gas.toFixed(0)}<br>
-        <span style="font-size:12px;opacity:0.6;">Includes standing charges, GB-average, Direct Debit.</span>`;
-    });
-}
-document.getElementById('elecInput').oninput = updateBill;
-document.getElementById('gasInput').oninput = updateBill;
-
-// --- Ofgem History Chart ---
-fetch('data/ofgem_history.json')
-  .then(r => r.json())
-  .then(data => {
-    document.getElementById('chartStatus').style.display = 'none';
-    const ctx = document.getElementById('capChart').getContext('2d');
-    new Chart(ctx, {
-      type: 'line',
-      data: {
-        labels: data.map(x => x.label),
-        datasets: [
-          {
-            label: 'Electricity (p/kWh)',
-            data: data.map(x => x.electricity_unit_avg),
-            borderColor: '#3ecbff',
-            backgroundColor: 'rgba(62,203,255,0.1)',
-            tension: 0.4,
-            fill: true,
-            pointRadius: 4,
-            pointHoverRadius: 6
-          },
-          {
-            label: 'Gas (p/kWh)',
-            data: data.map(x => x.gas_unit_avg),
-            borderColor: '#f3b33d',
-            backgroundColor: 'rgba(243,179,61,0.1)',
-            tension: 0.4,
-            fill: true,
-            pointRadius: 4,
-            pointHoverRadius: 6
-          }
-        ]
-      },
-      options: {
-        scales: {
-          x: {
-            ticks: { color: '#c0d2e8' },
-            grid: { color: 'rgba(255,255,255,0.05)' }
-          },
-          y: {
-            ticks: { color: '#c0d2e8' },
-            grid: { color: 'rgba(255,255,255,0.05)' },
-            title: { display: true, text: 'p/kWh (GB avg)', color: '#9bb4d0' }
-          }
-        },
-        plugins: {
-          legend: { labels: { color: '#fff' } },
-          tooltip: { mode: 'index', intersect: false }
-        }
+  <script>
+    async function loadLatest() {
+      try {
+        const res = await fetch("data/latest.json");
+        const data = await res.json();
+        document.getElementById("elec").textContent = data.ofgem_electricity_unit_avg.toFixed(2);
+        document.getElementById("gas").textContent = data.ofgem_gas_unit_avg.toFixed(2);
+        document.getElementById("period").textContent = `Ofgem cap period: ${data.ofgem_cap_period}`;
+        document.getElementById("bill").textContent = `Typical dual-fuel bill: £${data.typical_bill_annual}/year (~£${data.typical_bill_monthly}/month).`;
+      } catch (e) {
+        document.getElementById("period").textContent = "⚠️ Failed to load latest cap data.";
       }
-    });
-  })
-  .catch(err => {
-    document.getElementById('chartStatus').innerText = 'Failed to load data.';
-    console.error('Chart load error:', err);
-  });
-</script>
+    }
 
+    async function loadChart() {
+      try {
+        const res = await fetch("data/ofgem_history.json");
+        const history = await res.json();
+        const labels = history.slice(-5).map(d => d.label);
+        const elec = history.slice(-5).map(d => d.electricity_unit_avg);
+        const gas = history.slice(-5).map(d => d.gas_unit_avg);
+
+        const ctx = document.getElementById("capChart").getContext("2d");
+        new Chart(ctx, {
+          type: "line",
+          data: {
+            labels: labels,
+            datasets: [
+              {
+                label: "Electricity (p/kWh)",
+                data: elec,
+                borderColor: "#00b4ff",
+                tension: 0.3,
+                fill: false,
+              },
+              {
+                label: "Gas (p/kWh)",
+                data: gas,
+                borderColor: "#ffcc00",
+                tension: 0.3,
+                fill: false,
+              }
+            ]
+          },
+          options: {
+            plugins: {
+              legend: { labels: { color: "#e0eaff" } },
+              tooltip: {
+                callbacks: {
+                  label: ctx => `${ctx.dataset.label}: ${ctx.formattedValue} p/kWh`
+                }
+              }
+            },
+            scales: {
+              x: { ticks: { color: "#a0b9d6" } },
+              y: { ticks: { color: "#a0b9d6" }, beginAtZero: false }
+            }
+          }
+        });
+      } catch (err) {
+        document.getElementById("chartStatus").textContent = "Failed to load data.";
+      }
+    }
+
+    function calcBill() {
+      const elecUsage = parseFloat(document.getElementById("elecUsage").value);
+      const gasUsage = parseFloat(document.getElementById("gasUsage").value);
+      const elecRate = parseFloat(document.getElementById("elec").textContent) || 0;
+      const gasRate = parseFloat(document.getElementById("gas").textContent) || 0;
+
+      const elecCost = elecUsage * elecRate / 100;
+      const gasCost = gasUsage * gasRate / 100;
+      const total = elecCost + gasCost;
+
+      document.getElementById("estimate").textContent = `Estimated annual cost: £${total.toFixed(0)} (~£${(total/12).toFixed(0)}/month)`;
+    }
+
+    document.getElementById("elecUsage").addEventListener("input", calcBill);
+    document.getElementById("gasUsage").addEventListener("input", calcBill);
+
+    loadLatest().then(calcBill);
+    loadChart();
+  </script>
 </body>
 </html>
