@@ -164,17 +164,28 @@
 
   <script>
     async function loadLatest() {
-      try {
-        const res = await fetch("data/latest.json");
-        const data = await res.json();
-        document.getElementById("elec").textContent = data.ofgem_electricity_unit_avg.toFixed(2);
-        document.getElementById("gas").textContent = data.ofgem_gas_unit_avg.toFixed(2);
-        document.getElementById("period").textContent = `Ofgem cap period: ${data.ofgem_cap_period}`;
-        document.getElementById("bill").textContent = `Typical dual-fuel bill: £${data.typical_bill_annual}/year (~£${data.typical_bill_monthly}/month).`;
-      } catch (e) {
-        document.getElementById("period").textContent = "⚠️ Failed to load latest cap data.";
-      }
-    }
+  try {
+    const res = await fetch("data/latest.json");
+    const data = await res.json();
+
+    const elec = data.ofgem?.electricity_unit_avg ?? data.electricity_unit_avg ?? 0;
+    const gas = data.ofgem?.gas_unit_avg ?? data.gas_unit_avg ?? 0;
+    const period = data.ofgem?.period ?? "Unknown period";
+
+    document.getElementById("elec").textContent = elec.toFixed(2);
+    document.getElementById("gas").textContent = gas.toFixed(2);
+    document.getElementById("period").textContent = `Ofgem cap period: ${period}`;
+
+    const annual = data.typical_bill?.dual_annual_gbp ?? 0;
+    const monthly = data.typical_bill?.dual_monthly_gbp ?? 0;
+    document.getElementById("bill").textContent =
+      `Typical dual-fuel bill: £${annual.toFixed(0)}/year (~£${monthly.toFixed(0)}/month).`;
+
+  } catch (e) {
+    document.getElementById("period").textContent = "⚠️ Failed to load latest cap data.";
+  }
+}
+
 
     async function loadChart() {
       try {
