@@ -198,6 +198,51 @@
       padding-left: 14px;
     }
 
+    /* Calculator styles */
+    .calc-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+      margin-top: 6px;
+      margin-bottom: 4px;
+    }
+    .calc-label {
+      font-size: 10px;
+      color: var(--text-subtle);
+      margin-bottom: 3px;
+    }
+    .calc-input-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .calc-input {
+      padding: 5px 7px;
+      border-radius: 10px;
+      border: 1px solid rgba(148, 163, 253, 0.35);
+      background: rgba(5, 10, 25, 0.98);
+      color: var(--text-main);
+      font-size: 11px;
+      width: 100%;
+    }
+    .calc-input:focus {
+      outline: none;
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.35);
+    }
+    .calc-note {
+      font-size: 9px;
+      color: var(--text-subtle);
+    }
+    .calc-output {
+      font-size: 11px;
+      margin-top: 4px;
+      color: var(--text-subtle);
+    }
+    .calc-output strong {
+      color: #e5e7eb;
+    }
+
     footer {
       margin-top: 24px;
       font-size: 9px;
@@ -209,6 +254,7 @@
       body { padding: 16px 14px 26px; }
       .grid { grid-template-columns: 1fr; }
       .top-metrics { grid-template-columns: 1fr; }
+      .calc-grid { grid-template-columns: 1fr; }
     }
   </style>
 </head>
@@ -227,7 +273,6 @@
     <nav>
       <a href="index.html" class="active">Dashboard</a>
       <a href="reports/index.html">Daily Reports</a>
-      <!-- 现在跳转到本页下方的 Data Sources 区块 -->
       <a href="#data-sources">Data Sources</a>
     </nav>
     <div class="status-bar">
@@ -321,7 +366,7 @@
     </section>
   </div>
 
-  <!-- Data Sources block (anchor target) -->
+  <!-- Data sources & transparency -->
   <div class="grid" style="margin-top: 16px;" id="data-sources">
     <section class="card">
       <div class="section-title">Data sources &amp; endpoints</div>
@@ -362,12 +407,73 @@
     </section>
   </div>
 
+  <!-- Quick bill estimator card -->
+  <section class="card" style="margin-top: 16px;">
+    <div class="section-title">Quick bill estimator (using current cap)</div>
+    <p class="section-text">
+      Estimate your annual and monthly cost on the default tariff cap. Uses the live GB-average
+      unit rates and standing charges from this site. This is a rough guide, not a quote.
+    </p>
+    <div class="calc-grid">
+      <div class="calc-input-wrap">
+        <div class="calc-label">Annual electricity usage (kWh)</div>
+        <input id="calc-elec-kwh" class="calc-input" type="number" min="0" step="50" />
+        <div class="calc-note">Typical TDCV: 2,700 kWh</div>
+      </div>
+      <div class="calc-input-wrap">
+        <div class="calc-label">Annual gas usage (kWh)</div>
+        <input id="calc-gas-kwh" class="calc-input" type="number" min="0" step="100" />
+        <div class="calc-note">Typical TDCV: 11,500 kWh</div>
+      </div>
+    </div>
+    <div id="calc-output" class="calc-output">
+      Waiting for live cap data…
+    </div>
+    <div class="calc-note">
+      Includes standing charges (GB-average, Direct Debit). Excludes any discounts / regional variations.
+    </div>
+  </section>
+
   <footer>
     &copy; ukenergydata.co.uk · Generated automatically from public data sources.
   </footer>
 </div>
 
 <script>
+let ofgemRates = null;
+
+function updateCalculator() {
+  const out = document.getElementById('calc-output');
+  if (!out) return;
+
+  if (!ofgemRates) {
+    out.textContent = 'Waiting for live cap data…';
+    return;
+  }
+
+  const elecInput = document.getElementById('calc-elec-kwh');
+  const gasInput = document.getElementById('calc-gas-kwh');
+  const e = parseFloat(elecInput.value) || 0;
+  const g = parseFloat(gasInput.value) || 0;
+
+  if (e <= 0 && g <= 0) {
+    out.textContent = 'Enter your annual usage in kWh to see an estimate.';
+    return;
+  }
+
+  const DAYS = 365;
+  const elecAnnual = ofgemRates.elec_unit * e + ofgemRates.elec_sc * DAYS;
+  const gasAnnual = ofgemRates.gas_unit * g + ofgemRates.gas_sc * DAYS;
+  const dualAnnual = elecAnnual + gasAnnual;
+  const dualMonthly = dualAnnual / 12;
+
+  out.innerHTML =
+    `Estimated annual cost: <strong>£${dualAnnual.toFixed(0)}</strong>` +
+    ` (~£${dualMonthly.toFixed(0)}/month)` +
+    (e > 0 ? ` · Elec ~£${elecAnnual.toFixed(0)}` : '') +
+    (g > 0 ? ` · Gas ~£${gasAnnual.toFixed(0)}` : '');
+}
+
 async function loadDashboard() {
   try {
     const res = await fetch('data/latest.json', { cache: 'no-store' });
@@ -400,6 +506,14 @@ async function loadDashboard() {
           statusOfgem.classList.remove('error');
         }
       }
+
+      // prepare calculator rates in £
+      ofgemRates = {
+        elec_unit: ofgem.electricity_unit_avg / 100.0,
+        gas_unit: ofgem.gas_unit_avg / 100.0,
+        elec_sc: ofgem.elec_standing_avg,
+        gas_sc: ofgem.gas_standing_avg
+      };
     } else {
       elecEl.textContent = '-- p/kWh';
       gasEl.textContent = '-- p/kWh';
@@ -410,7 +524,7 @@ async function loadDashboard() {
       }
     }
 
-    // --- Typical bill line ---
+    // --- Typical bill line (from backend precomputed) ---
     const tb = data.typical_bill || null;
     if (tb && tb.dual_annual_gbp) {
       const yr = tb.dual_annual_gbp.toFixed(0);
@@ -419,6 +533,23 @@ async function loadDashboard() {
         `Typical dual-fuel bill under current cap (Ofgem TDCV): £${yr}/year (~£${mo}/month).`;
     } else {
       typicalBillEl.textContent = 'Typical dual-fuel bill under cap: not available.';
+    }
+
+    // Pre-fill calculator with TDCV if present
+    const elecInput = document.getElementById('calc-elec-kwh');
+    const gasInput = document.getElementById('calc-gas-kwh');
+    if (elecInput && gasInput) {
+      const defaultElec = tb?.tdcv?.electricity_kwh || 2700;
+      const defaultGas = tb?.tdcv?.gas_kwh || 11500;
+      elecInput.value = defaultElec;
+      gasInput.value = defaultGas;
+    }
+
+    updateCalculator();
+
+    if (elecInput && gasInput) {
+      elecInput.addEventListener('input', updateCalculator);
+      gasInput.addEventListener('input', updateCalculator);
     }
 
     // --- Agile summary ---
@@ -478,6 +609,8 @@ async function loadDashboard() {
     }
     const tb = document.getElementById('typical-bill-line');
     if (tb) tb.textContent = 'Typical dual-fuel bill under cap: unavailable.';
+    const out = document.getElementById('calc-output');
+    if (out) out.textContent = 'Unable to load cap data for calculator.';
   }
 }
 
