@@ -39,7 +39,7 @@ OFGEM_CAP_HISTORY = [
         "electricity_unit_avg": 22.36,
         "gas_unit_avg": 5.48,
     },
-    # 后续 cap 周期可在这里继续往下加
+    # When new caps are announced, append here:
     # {
     #     "period": "1 Oct 2024 – 31 Dec 2024",
     #     "label": "Oct–Dec 2024",
