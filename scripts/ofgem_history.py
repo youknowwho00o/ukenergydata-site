@@ -8,6 +8,10 @@ This file is intentionally short and human-editable.
 Update when Ofgem announces new caps so the history chart and comparisons stay useful.
 """
 
+import json
+from pathlib import Path
+
+# --- Manual records of historical caps ---
 OFGEM_CAP_HISTORY = [
     {
         "period": "1 Jul 2023 – 30 Sep 2023",
@@ -39,11 +43,27 @@ OFGEM_CAP_HISTORY = [
         "electricity_unit_avg": 22.36,
         "gas_unit_avg": 5.48,
     },
-    # When new caps are announced, append here:
-    # {
-    #     "period": "1 Oct 2024 – 31 Dec 2024",
-    #     "label": "Oct–Dec 2024",
-    #     "electricity_unit_avg": ...,
-    #     "gas_unit_avg": ...,
-    # },
+    {
+        "period": "1 Oct 2024 – 31 Dec 2024",
+        "label": "Oct–Dec 2024",
+        "electricity_unit_avg": 25.73,
+        "gas_unit_avg": 6.33,
+    },
 ]
+
+# --- Write JSON file for frontend ---
+def write_history_json():
+    root = Path(__file__).resolve().parent.parent
+    data_dir = root / "data"
+    data_dir.mkdir(exist_ok=True)
+
+    outfile = data_dir / "ofgem_history.json"
+    outfile.write_text(
+        json.dumps(OFGEM_CAP_HISTORY, indent=2),
+        encoding="utf-8"
+    )
+    print(f"[ok] wrote {outfile}")
+
+# --- Allow manual run ---
+if __name__ == "__main__":
+    write_history_json()
