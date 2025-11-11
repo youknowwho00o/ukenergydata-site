@@ -2,42 +2,37 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>UK Energy Data – Daily snapshot of UK electricity & gas prices</title>
+  <title>UK Energy Data – Daily snapshot of UK electricity &amp; gas prices</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta
-    name="description"
-    content="Auto-updated snapshots of UK energy prices based on Ofgem publications and public tariff data, including default tariff cap levels and Octopus Agile half-hourly rates."
-  />
+  <meta name="description"
+        content="Automated daily snapshot of UK electricity and gas prices, including Ofgem price cap and Octopus Agile data." />
   <style>
     :root {
       --bg: #020817;
-      --bg-soft: #020817;
-      --card: #020817;
-      --card-soft: #020817;
+      --bg-soft: #050b1c;
+      --bg-card: #070f23;
+      --border-subtle: rgba(148, 163, 253, 0.12);
       --accent: #38bdf8;
-      --accent-soft: rgba(56,189,248,0.12);
-      --accent-strong: #60a5fa;
+      --accent-soft: rgba(56, 189, 248, 0.14);
+      --accent-alt: #22c55e;
       --text-main: #e5e7eb;
-      --text-soft: #9ca3af;
-      --border-subtle: rgba(148,163,253,0.18);
+      --text-subtle: #9ca3af;
       --radius-xl: 22px;
-      --radius-lg: 18px;
-      --shadow-soft: 0 18px 60px rgba(15,23,42,0.7);
-      --font: system-ui,-apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",sans-serif;
+      --radius-pill: 999px;
+      --shadow-soft: 0 18px 60px rgba(15, 23, 42, 0.9);
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, -system-ui, sans-serif;
     }
 
     * {
       box-sizing: border-box;
     }
-
     body {
       margin: 0;
-      padding: 32px 24px 40px;
-      font-family: var(--font);
-      background: radial-gradient(circle at top left, #111827 0, #020817 32%, #000 100%);
+      padding: 30px 22px 40px;
+      font-family: var(--font-sans);
+      background: radial-gradient(circle at top, #020817 0, #000 55%);
       color: var(--text-main);
     }
-
     a {
       color: var(--accent);
       text-decoration: none;
@@ -47,256 +42,205 @@
     }
 
     .page {
-      max-width: 1240px;
+      max-width: 1320px;
       margin: 0 auto;
     }
 
-    /* Header */
-
-    .header {
+    header {
       display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 18px;
+      flex-direction: column;
+      gap: 10px;
       margin-bottom: 26px;
     }
-
-    .brand {
+    .brand-line {
       display: flex;
       align-items: center;
       gap: 10px;
+      flex-wrap: wrap;
     }
-
-    .brand-logo {
-      width: 16px;
-      height: 16px;
-      border-radius: 999px;
-      background: radial-gradient(circle at 30% 0, #38bdf8, #1d4ed8);
-      box-shadow: 0 0 18px rgba(56,189,248,0.8);
+    .brand-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--accent);
+      box-shadow: 0 0 12px var(--accent);
     }
-
     .brand-title {
+      font-size: 22px;
       font-weight: 600;
-      font-size: 20px;
-      letter-spacing: 0.01em;
     }
-
-    .pill {
-      font-size: 10px;
-      padding: 3px 8px 4px;
-      border-radius: 999px;
-      border: 1px solid rgba(56,189,248,0.35);
+    .brand-sub {
+      font-size: 13px;
+      padding: 2px 9px;
+      border-radius: var(--radius-pill);
+      background: var(--accent-soft);
       color: var(--accent);
-      background: rgba(15,23,42,0.9);
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
+      border: 1px solid rgba(56, 189, 248, 0.4);
     }
 
-    .nav {
+    nav {
       display: flex;
+      gap: 16px;
       align-items: center;
-      gap: 18px;
-      font-size: 12px;
-      color: var(--text-soft);
+      flex-wrap: wrap;
+      font-size: 13px;
+      margin-top: 4px;
     }
-
-    .nav a {
-      color: var(--text-soft);
-      padding: 4px 0;
+    nav a {
+      color: var(--text-subtle);
     }
-
-    .nav a.active {
+    nav a.active {
       color: var(--accent);
       font-weight: 500;
     }
-
-    .live-dot {
-      width: 7px;
-      height: 7px;
-      border-radius: 999px;
-      background: #22c55e;
-      box-shadow: 0 0 10px #22c55e;
-    }
-
     .live-pill {
+      margin-left: auto;
+      padding: 4px 10px;
+      border-radius: var(--radius-pill);
+      font-size: 11px;
+      background: rgba(22, 163, 74, 0.12);
+      color: var(--accent-alt);
+      border: 1px solid rgba(34, 197, 94, 0.4);
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      background: rgba(15,23,42,0.98);
-      border: 1px solid rgba(34,197,94,0.28);
-      font-size: 10px;
-      color: #bbf7d0;
+    }
+    .live-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: var(--accent-alt);
+      box-shadow: 0 0 10px var(--accent-alt);
     }
 
-    /* Layout */
+    .status-bar {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+      font-size: 10px;
+    }
+    .status-pill {
+      padding: 4px 9px;
+      border-radius: var(--radius-pill);
+      border: 1px solid rgba(56, 189, 248, 0.28);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--accent);
+    }
+    .status-pill.warn {
+      border-color: rgba(234, 179, 8, 0.5);
+      color: #fde68a;
+      background: rgba(120, 53, 15, 0.32);
+    }
+    .status-pill.error {
+      border-color: rgba(248, 113, 113, 0.7);
+      color: #fecaca;
+      background: rgba(127, 29, 29, 0.4);
+    }
 
-    .grid-main {
+    .grid {
       display: grid;
-      grid-template-columns: minmax(0, 2.1fr) minmax(260px, 1.4fr);
+      grid-template-columns: minmax(0, 7fr) minmax(280px, 4fr);
       gap: 18px;
-      margin-bottom: 18px;
+      align-items: flex-start;
     }
 
     .card {
-      background: radial-gradient(circle at top left, rgba(56,189,248,0.06), transparent 55%) border-box,
-                  rgba(9,9,11,0.98);
+      background: var(--bg-card);
       border-radius: var(--radius-xl);
-      border: 1px solid rgba(75,85,99,0.7);
       padding: 18px 18px 16px;
+      border: 1px solid var(--border-subtle);
       box-shadow: var(--shadow-soft);
     }
 
-    .card-soft {
-      background: rgba(3,7,18,0.98);
-      border-radius: var(--radius-xl);
-      border: 1px solid rgba(31,41,55,0.9);
-      padding: 16px 16px 14px;
-      box-shadow: 0 16px 40px rgba(15,23,42,0.6);
-    }
-
-    .section-label {
-      font-size: 10px;
-      letter-spacing: 0.16em;
-      text-transform: uppercase;
-      color: #6b7280;
-      margin-bottom: 6px;
-    }
-
-    h1 {
-      font-size: 24px;
+    .headline {
+      font-size: 26px;
+      font-weight: 600;
       margin: 0 0 6px;
-      color: #e5e7eb;
+    }
+    .lede {
+      font-size: 13px;
+      color: var(--text-subtle);
+      margin: 0 0 14px;
+      max-width: 760px;
     }
 
-    .lead {
-      font-size: 12px;
-      line-height: 1.7;
-      color: var(--text-soft);
-      max-width: 640px;
-      margin-bottom: 12px;
+    .top-metrics {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 10px;
     }
-
-    /* Metric cards */
-
-    .metric-row {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      margin-top: 10px;
-    }
-
     .metric {
-      flex: 1 1 150px;
-      min-width: 150px;
-      padding: 10px 11px 9px;
+      padding: 12px 12px 10px;
       border-radius: 18px;
-      background: radial-gradient(circle at top left, rgba(79,70,229,0.14), transparent 70%),
-                  rgba(3,7,18,0.96);
-      border: 1px solid rgba(75,85,99,0.85);
+      background: radial-gradient(circle at top left, rgba(56, 189, 248, 0.12), var(--bg-soft));
+      border: 1px solid rgba(148, 163, 253, 0.18);
       display: flex;
       flex-direction: column;
       gap: 2px;
     }
-
     .metric-label {
-      font-size: 10px;
-      color: #9ca3af;
+      font-size: 11px;
+      color: var(--text-subtle);
     }
-
     .metric-value {
-      font-size: 17px;
+      font-size: 20px;
       font-weight: 600;
-      color: #f9fafb;
     }
-
-    .metric-sub {
-      font-size: 9px;
-      color: #6b7280;
-    }
-
-    .muted {
-      color: #6b7280;
-      font-size: 9px;
-    }
-
-    .latest-report {
+    .metric-caption {
       font-size: 10px;
-      color: #9ca3af;
-      margin-top: 6px;
+      color: var(--text-subtle);
     }
 
-    .latest-report a {
-      color: var(--accent);
-      font-weight: 500;
-    }
-
-    /* Agile card */
-
-    .slots-list {
-      list-style: none;
-      padding: 0;
-      margin: 10px 0 0;
+    .meta-line {
       font-size: 10px;
-      color: #9ca3af;
-    }
-
-    .slots-list li {
-      padding: 6px 9px;
-      border-radius: 12px;
-      margin-bottom: 5px;
-      border: 1px solid rgba(75,85,99,0.85);
-      background: radial-gradient(circle at right, rgba(56,189,248,0.06), transparent 70%);
-      display: flex;
-      justify-content: space-between;
-      gap: 10px;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-
-    .slots-label {
-      font-weight: 500;
-      color: #e5e7eb;
-    }
-
-    .slots-price {
-      color: var(--accent);
-      font-weight: 500;
-    }
-
-    /* Lower grid */
-
-    .grid-lower {
-      display: grid;
-      grid-template-columns: minmax(0, 2.1fr) minmax(260px, 1.4fr);
-      gap: 18px;
+      color: var(--text-subtle);
       margin-top: 4px;
     }
 
+    .section-title {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 0 0 6px;
+    }
+    .section-text {
+      font-size: 11px;
+      color: var(--text-subtle);
+      margin: 0 0 4px;
+    }
     .list {
-      margin: 6px 0 0;
-      padding-left: 15px;
+      padding-left: 16px;
+      margin: 4px 0 0;
+      font-size: 11px;
+      color: var(--text-subtle);
+    }
+    .list li {
+      margin-bottom: 2px;
+    }
+
+    .agile-list {
       font-size: 10px;
-      color: #9ca3af;
-      line-height: 1.7;
+      color: var(--text-subtle);
+      margin-top: 6px;
+      padding-left: 14px;
     }
 
-    .footer-note {
-      margin-top: 18px;
+    footer {
+      margin-top: 24px;
       font-size: 9px;
-      color: #6b7280;
-      text-align: right;
+      color: var(--text-subtle);
+      text-align: left;
     }
 
-    @media (max-width: 900px) {
+    @media (max-width: 840px) {
       body {
-        padding: 18px 14px 26px;
+        padding: 16px 14px 26px;
       }
-      .grid-main,
-      .grid-lower {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+      .top-metrics {
         grid-template-columns: 1fr;
       }
     }
@@ -304,256 +248,216 @@
 </head>
 <body>
 <div class="page">
-  <!-- Header -->
-  <header class="header">
-    <div class="brand">
-      <div class="brand-logo"></div>
-      <div>
-        <div class="brand-title">UK Energy Data</div>
-        <div class="pill">
-          Auto-updated insights
-        </div>
+  <header>
+    <div class="brand-line">
+      <div class="brand-dot"></div>
+      <div class="brand-title">UK Energy Data</div>
+      <div class="brand-sub">Auto-updated insights</div>
+      <div class="live-pill">
+        <div class="live-dot"></div>
+        Live data pipeline
       </div>
     </div>
-    <nav class="nav">
-      <a href="/" class="active">Dashboard</a>
-      <a href="/reports/">Daily Reports</a>
-      <a href="#sources">Data Sources</a>
-      <span class="live-pill">
-        <span class="live-dot"></span>
-        Live data pipeline
-      </span>
+    <nav>
+      <a href="index.html" class="active">Dashboard</a>
+      <a href="reports/index.html">Daily Reports</a>
+      <a href="https://github.com/youknowwho00o/ukenergydata-site">Data Sources</a>
     </nav>
+    <div class="status-bar">
+      <span id="status-ofgem" class="status-pill">Ofgem cap: loading…</span>
+      <span id="status-agile" class="status-pill">Octopus Agile: loading…</span>
+    </div>
   </header>
 
-  <!-- Top grid: left dashboard, right Agile slots -->
-  <section class="grid-main">
+  <div class="grid">
     <!-- Left: main dashboard -->
-    <div class="card">
-      <div class="section-label">UK Energy Dashboard</div>
-      <h1>Daily snapshot of UK electricity &amp; gas prices</h1>
-      <p class="lead">
-        Simple, machine-generated summaries based on official Ofgem publications
-        and public tariff data. Designed to give households, analysts and
-        journalists a clear, low-noise view of where prices sit today.
+    <section class="card">
+      <div class="headline">Daily snapshot of UK electricity &amp; gas prices</div>
+      <p class="lede">
+        Concise, automatically generated summaries using official Ofgem publications
+        and public tariff data. No spin — just current headline numbers for analysts,
+        journalists and households.
       </p>
 
-      <div class="metric-row">
+      <div class="top-metrics">
         <div class="metric">
           <div class="metric-label">Price cap – Elec (avg)</div>
-          <div class="metric-value"><span id="cap-elec">--</span> p/kWh</div>
-          <div class="metric-sub">
-            Typical direct debit customers, GB avg
-          </div>
+          <div id="metric-elec" class="metric-value">-- p/kWh</div>
+          <div class="metric-caption">Typical direct debit customers, GB average.</div>
         </div>
         <div class="metric">
           <div class="metric-label">Price cap – Gas (avg)</div>
-          <div class="metric-value"><span id="cap-gas">--</span> p/kWh</div>
-          <div class="metric-sub">
-            Typical direct debit customers, GB avg
-          </div>
+          <div id="metric-gas" class="metric-value">-- p/kWh</div>
+          <div class="metric-caption">Typical direct debit customers, GB average.</div>
         </div>
         <div class="metric">
           <div class="metric-label">Agile Elec – Today (avg)</div>
-          <div class="metric-value"><span id="agile-avg">--</span> p/kWh</div>
-          <div class="metric-sub">
-            From Octopus Agile half-hourly rates (if available)
-          </div>
+          <div id="metric-agile" class="metric-value">N/A p/kWh</div>
+          <div class="metric-caption">From Octopus Agile half-hourly rates (if available).</div>
         </div>
       </div>
 
-      <div class="latest-report">
-        Ofgem cap period:
-        <span id="cap-period">updating…</span><br />
-        Latest daily report:
-        <a id="latest-report-link" href="/reports/">view snapshot</a>
-        <span id="latest-report-date"></span>
+      <div class="meta-line" id="ofgem-period">
+        Ofgem cap period: updating…
       </div>
-    </div>
+      <div class="meta-line" id="latest-report">
+        Latest daily report: loading…
+      </div>
+    </section>
 
-    <!-- Right: Agile slots -->
-    <div class="card-soft">
-      <div class="section-label">Agile monitor</div>
-      <h2 style="font-size:15px;margin:0 0 2px;color:#e5e7eb;">
-        Cheapest Agile slots (today)
-      </h2>
-      <p class="muted" style="margin:0 0 6px;">
-        Based on Octopus Agile half-hourly unit rates. Values include VAT.
+    <!-- Right: Agile + methodology -->
+    <aside class="card">
+      <div class="section-title">Cheapest Agile slots (today)</div>
+      <div class="section-text">
+        Based on Octopus Agile half-hourly unit rates (incl. VAT), when data is available.
+      </div>
+      <div id="agile-slots" class="section-text">Loading live slots…</div>
+
+      <ul id="agile-slots-list" class="agile-list"></ul>
+
+      <hr style="border: none; border-top: 1px solid rgba(148,163,253,0.16); margin: 10px 0;" />
+
+      <div class="section-title">How the numbers are calculated</div>
+      <ul class="list">
+        <li>Default tariff cap data scraped from Ofgem’s official “Energy price cap explained” page.</li>
+        <li>Agile prices from the public Octopus Energy API, when available.</li>
+        <li>All processing runs automatically via GitHub Actions; everything is reproducible.</li>
+        <li>If a live source fails, numbers are clearly marked as N/A or fallback.</li>
+      </ul>
+    </aside>
+  </div>
+
+  <!-- Lower content blocks -->
+  <div class="grid" style="margin-top: 16px;">
+    <section class="card">
+      <div class="section-title">What this site publishes</div>
+      <ul class="list">
+        <li>Daily summary of the Ofgem default tariff cap (current period, GB averages).</li>
+        <li>Octopus Agile average prices and cheapest half-hour slots (when data exists).</li>
+        <li>Human-readable daily snapshot pages for quick referencing.</li>
+        <li>Machine-readable JSON via <code>data/latest.json</code> for reuse.</li>
+      </ul>
+    </section>
+
+    <section class="card">
+      <div class="section-title">What is ukenergydata.co.uk?</div>
+      <p class="section-text">
+        An independent, automated microsite turning raw UK energy data into clear, low-noise
+        daily signals. No paywall, no clickbait — just verifiable numbers from public sources.
       </p>
-      <ul class="slots-list" id="agile-slots">
-        <li><span class="slots-label">Loading live slots…</span></li>
-      </ul>
-    </div>
-  </section>
-
-  <!-- Lower grid: explanation + roadmap -->
-  <section class="grid-lower">
-    <div class="card-soft">
-      <div class="section-label">Automated content</div>
-      <h2 style="font-size:14px;margin:0 0 4px;color:#e5e7eb;">
-        What this site publishes
-      </h2>
-      <ul class="list">
-        <li>
-          Daily summary of the Ofgem default tariff cap (current period, GB averages).
-        </li>
-        <li>
-          Octopus Agile price statistics – daily average and cheapest slots where data is available.
-        </li>
-        <li>
-          Short, machine-generated commentary designed for analysts &amp; journalists.
-        </li>
-        <li>
-          Exportable tables via static HTML &amp; CSV endpoints (work in progress).
-        </li>
-      </ul>
-    </div>
-
-    <div class="card-soft" id="sources">
-      <div class="section-label">Transparent &amp; public sources</div>
-      <h2 style="font-size:14px;margin:0 0 4px;color:#e5e7eb;">
-        How the numbers are calculated
-      </h2>
-      <ul class="list">
-        <li>
-          Default tariff cap data from Ofgem official publications (manually verified each cap period).
-        </li>
-        <li>
-          Agile prices from the public Octopus Energy API where available.
-        </li>
-        <li>
-          All calculations are reproducible and run daily via GitHub Actions.
-        </li>
-        <li>
-          If a live source fails, figures are shown as <strong>N/A</strong> rather than guessed.
-        </li>
-      </ul>
-    </div>
-  </section>
-
-  <div class="card-soft" style="margin-top:18px;">
-    <div class="section-label">About</div>
-    <h2 style="font-size:14px;margin:0 0 4px;color:#e5e7eb;">
-      What is ukenergydata.co.uk?
-    </h2>
-    <p class="lead" style="margin-bottom:4px;">
-      An independent, automated microsite turning raw UK energy data into
-      clear, low-maintenance daily signals. No paywall, no clickbait –
-      just concise numbers you can verify.
-    </p>
-    <p class="lead" style="font-size:10px;max-width:none;">
-      This page is experimental and will keep evolving. Use at your own risk.
-      Always confirm key decisions against official Ofgem / supplier documents.
-    </p>
+      <p class="section-text">
+        This project is experimental. Always confirm critical decisions against official Ofgem
+        publications or supplier tariffs.
+      </p>
+    </section>
   </div>
 
-  <div class="footer-note">
-    &copy; <span id="year"></span> ukenergydata.co.uk &middot; Generated automatically from
-    public data sources.
-  </div>
+  <footer>
+    &copy; ukenergydata.co.uk · Generated automatically from public data sources.
+  </footer>
 </div>
 
-<!-- Data wiring -->
 <script>
-  document.getElementById('year').textContent = new Date().getFullYear();
+async function loadDashboard() {
+  try {
+    const res = await fetch('data/latest.json', { cache: 'no-store' });
+    const data = await res.json();
 
-  async function loadDashboard() {
-    try {
-      const res = await fetch('/data/latest.json', { cache: 'no-cache' });
-      if (!res.ok) throw new Error('HTTP ' + res.status);
-      const data = await res.json();
+    // --- Ofgem ---
+    const ofgem = data.ofgem;
+    const statusOfgem = document.getElementById('status-ofgem');
+    const elecEl = document.getElementById('metric-elec');
+    const gasEl = document.getElementById('metric-gas');
+    const periodEl = document.getElementById('ofgem-period');
 
-      const ofgem = data.ofgem || {};
-      const agile = data.agile || {};
-      const date = data.date;
-      const gen = data.generated_at_utc;
+    if (ofgem && ofgem.electricity_unit_avg && ofgem.gas_unit_avg) {
+      elecEl.textContent = ofgem.electricity_unit_avg.toFixed(2) + ' p/kWh';
+      gasEl.textContent = ofgem.gas_unit_avg.toFixed(2) + ' p/kWh';
+      periodEl.textContent = 'Ofgem cap period: ' + ofgem.period;
 
-      // Ofgem cap
-      if (ofgem.electricity_unit_avg != null) {
-        const e = Number(ofgem.electricity_unit_avg);
-        document.getElementById('cap-elec').textContent =
-          isFinite(e) ? e.toFixed(2) : ofgem.electricity_unit_avg;
-      } else {
-        document.getElementById('cap-elec').textContent = 'N/A';
-      }
-
-      if (ofgem.gas_unit_avg != null) {
-        const g = Number(ofgem.gas_unit_avg);
-        document.getElementById('cap-gas').textContent =
-          isFinite(g) ? g.toFixed(2) : ofgem.gas_unit_avg;
-      } else {
-        document.getElementById('cap-gas').textContent = 'N/A';
-      }
-
-      document.getElementById('cap-period').textContent =
-        ofgem.period || 'Ofgem cap period not set';
-
-      // Latest report link
-      const reportLink = document.getElementById('latest-report-link');
-      const reportDate = document.getElementById('latest-report-date');
-      if (date) {
-        reportLink.href = `/reports/${date}.html`;
-        reportDate.textContent = `(${date})`;
-      } else {
-        reportDate.textContent = '';
-      }
-
-      if (gen) {
-        reportDate.textContent += ` · generated ${gen}`;
-      }
-
-      // Agile
-      const avgEl = document.getElementById('agile-avg');
-      const slotsUl = document.getElementById('agile-slots');
-
-      if (agile.has_data) {
-        const avg = Number(agile.avg);
-        avgEl.textContent = isFinite(avg) ? avg.toFixed(2) : avg;
-
-        slotsUl.innerHTML = '';
-        (agile.cheapest_slots || []).slice(0, 5).forEach((s) => {
-          // s 格式："{from} — {to} · {price} p/kWh"
-          const li = document.createElement('li');
-
-          const parts = String(s).split('·');
-          const timePart = parts[0]?.trim() || s;
-          const pricePart = parts[1]?.trim() || '';
-
-          const left = document.createElement('span');
-          left.className = 'slots-label';
-          left.textContent = timePart;
-
-          const right = document.createElement('span');
-          right.className = 'slots-price';
-          right.textContent = pricePart;
-
-          li.appendChild(left);
-          if (pricePart) li.appendChild(right);
-          slotsUl.appendChild(li);
-        });
-
-        if (!slotsUl.children.length) {
-          slotsUl.innerHTML =
-            '<li><span class="slots-label">Agile data available, but no slots parsed.</span></li>';
+      if (statusOfgem) {
+        if (ofgem.source === 'live') {
+          statusOfgem.textContent = 'Ofgem cap: live from official source';
+          statusOfgem.classList.remove('warn', 'error');
+        } else if (ofgem.source === 'live-cache') {
+          statusOfgem.textContent = 'Ofgem cap: using last successful live values (cache)';
+          statusOfgem.classList.add('warn');
+          statusOfgem.classList.remove('error');
+        } else {
+          statusOfgem.textContent = 'Ofgem cap: fallback values (check latest Ofgem docs)';
+          statusOfgem.classList.add('warn');
+          statusOfgem.classList.remove('error');
         }
-      } else {
-        avgEl.textContent = 'N/A';
-        slotsUl.innerHTML =
-          '<li><span class="slots-label">No Octopus Agile data available for today.</span></li>';
       }
-    } catch (err) {
-      console.error('Failed to load latest.json', err);
-      document.getElementById('cap-elec').textContent = 'N/A';
-      document.getElementById('cap-gas').textContent = 'N/A';
-      document.getElementById('cap-period').textContent =
-        'Live data temporarily unavailable';
-      document.getElementById('agile-avg').textContent = 'N/A';
-      document.getElementById('agile-slots').innerHTML =
-        '<li><span class="slots-label">Failed to load live data.</span></li>';
+    } else {
+      elecEl.textContent = '-- p/kWh';
+      gasEl.textContent = '-- p/kWh';
+      periodEl.textContent = 'Ofgem cap period: N/A';
+      if (statusOfgem) {
+        statusOfgem.textContent = 'Ofgem cap: unavailable';
+        statusOfgem.classList.add('error');
+      }
+    }
+
+    // --- Agile summary ---
+    const agile = data.agile || {};
+    const statusAgile = document.getElementById('status-agile');
+    const agileAvgEl = document.getElementById('metric-agile');
+    const agileSlotsText = document.getElementById('agile-slots');
+    const agileSlotsList = document.getElementById('agile-slots-list');
+
+    if (agile.has_data && agile.avg != null) {
+      agileAvgEl.textContent = agile.avg.toFixed(2) + ' p/kWh';
+      if (statusAgile) {
+        statusAgile.textContent = 'Octopus Agile: today data loaded';
+        statusAgile.classList.remove('warn', 'error');
+      }
+
+      if (Array.isArray(agile.cheapest_slots) && agile.cheapest_slots.length > 0) {
+        agileSlotsText.textContent = 'Cheapest half-hour slots (local time):';
+        agileSlotsList.innerHTML = '';
+        agile.cheapest_slots.slice(0, 6).forEach(slot => {
+          const li = document.createElement('li');
+          li.textContent = `${slot.time}: ${slot.price.toFixed(2)} p/kWh`;
+          agileSlotsList.appendChild(li);
+        });
+      } else {
+        agileSlotsText.textContent = 'Agile data loaded, but no cheapest slots summary available.';
+      }
+    } else {
+      agileAvgEl.textContent = 'N/A p/kWh';
+      agileSlotsText.textContent = 'No Octopus Agile half-hourly data available for today.';
+      agileSlotsList.innerHTML = '';
+      if (statusAgile) {
+        statusAgile.textContent = 'Octopus Agile: no data for today';
+        statusAgile.classList.add('warn');
+        statusAgile.classList.remove('error');
+      }
+    }
+
+    // --- Latest report link ---
+    const latestReportEl = document.getElementById('latest-report');
+    if (data.date && latestReportEl) {
+      latestReportEl.innerHTML =
+        `Latest daily report: <a href="reports/${data.date}.html">view snapshot (${data.date})</a>` +
+        (data.generated_at_utc ? ` · generated ${data.generated_at_utc}` : '');
+    }
+
+  } catch (err) {
+    console.error('Failed to load latest.json', err);
+    const so = document.getElementById('status-ofgem');
+    const sa = document.getElementById('status-agile');
+    if (so) {
+      so.textContent = 'Failed to load latest data';
+      so.classList.add('error');
+    }
+    if (sa) {
+      sa.textContent = '';
     }
   }
+}
 
-  loadDashboard();
+loadDashboard();
 </script>
 </body>
 </html>
