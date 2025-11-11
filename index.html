@@ -32,10 +32,9 @@
     }
     a { color: var(--accent); text-decoration: none; }
     a:hover { text-decoration: underline; }
-
     .page { max-width: 1320px; margin: 0 auto; }
 
-    /* Sticky header inspired by clean news sites */
+    /* Sticky header */
     header {
       position: sticky;
       top: 0;
@@ -44,7 +43,6 @@
       background: radial-gradient(circle at top, rgba(2,8,23,0.98), rgba(2,6,23,0.98));
       backdrop-filter: blur(16px);
     }
-
     .brand-line {
       display: flex;
       align-items: center;
@@ -181,7 +179,7 @@
       margin-top: 2px;
     }
 
-    /* Highlights block */
+    /* Highlights */
     .highlights {
       margin-top: 10px;
       padding-top: 6px;
@@ -202,9 +200,7 @@
       padding-left: 14px;
       margin: 0;
     }
-    .highlights-list li {
-      margin-bottom: 1px;
-    }
+    .highlights-list li { margin-bottom: 1px; }
 
     .section-title {
       font-size: 14px;
@@ -231,7 +227,7 @@
       padding-left: 14px;
     }
 
-    /* Calculator styles */
+    /* Calculator */
     .calc-grid {
       display: grid;
       grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -347,6 +343,9 @@
         <div class="meta-line" id="ofgem-period">
           Ofgem cap period: updating…
         </div>
+        <div class="meta-line" id="cap-change-line">
+          Cap change vs previous period: calculating…
+        </div>
         <div class="meta-line" id="typical-bill-line">
           Typical dual-fuel bill under current cap: calculating…
         </div>
@@ -354,7 +353,7 @@
           Latest daily report: loading…
         </div>
 
-        <!-- Today’s highlights (auto-filled from data) -->
+        <!-- Today’s highlights -->
         <div class="highlights">
           <div class="highlights-label">Today’s highlights</div>
           <ul id="highlights-list" class="highlights-list">
@@ -379,12 +378,12 @@
           <li>Default tariff cap data scraped from Ofgem’s official “Energy price cap explained” page.</li>
           <li>Agile prices from the public Octopus Energy API, when available.</li>
           <li>All processing runs automatically via GitHub Actions; everything is reproducible.</li>
-          <li>If a live source fails, numbers are clearly marked as cached or fallback.</li>
+          <li>If a live source fails, values are labelled as cached or fallback.</li>
         </ul>
       </aside>
     </div>
 
-    <!-- Content rows -->
+    <!-- What / About -->
     <div class="grid" style="margin-top: 16px;">
       <section class="card">
         <div class="section-title">What this site publishes</div>
@@ -403,8 +402,7 @@
           daily signals. No paywall, no clickbait — just verifiable numbers from public sources.
         </p>
         <p class="section-text">
-          This project is experimental. Always confirm critical decisions against official Ofgem
-          publications or supplier tariffs.
+          Always confirm critical decisions against official Ofgem publications or supplier tariffs.
         </p>
       </section>
     </div>
@@ -449,11 +447,29 @@
       </section>
     </div>
 
+    <!-- Ofgem cap history chart -->
+    <section class="card" style="margin-top: 16px;">
+      <div class="section-title">Ofgem price cap history (GB average)</div>
+      <p class="section-text">
+        Recent default tariff cap periods, showing GB-average unit rates (incl. VAT).
+        A quick view of how today’s cap compares with recent levels.
+      </p>
+      <div id="cap-history-chart-wrapper" style="margin-top:6px;">
+        <svg id="cap-history-chart"
+             viewBox="0 0 260 90" preserveAspectRatio="none"
+             style="width:100%;height:80px;background:rgba(3,7,18,0.98);border-radius:14px;border:1px solid rgba(148,163,253,0.16);">
+        </svg>
+      </div>
+      <div id="cap-history-legend" class="calc-note" style="margin-top:4px;">
+        Loading history…
+      </div>
+    </section>
+
     <!-- Quick bill estimator -->
     <section class="card" style="margin-top: 16px;">
       <div class="section-title">Quick bill estimator (using current cap)</div>
       <p class="section-text">
-        Estimate your annual and monthly cost on the default tariff cap. Uses the live GB-average
+        Estimate your annual and monthly cost on the default tariff cap. Uses live GB-average
         unit rates and standing charges from this site. This is a rough guide, not a quote.
       </p>
       <div class="calc-grid">
@@ -488,23 +504,28 @@ let ofgemRates = null;
 function updateCalculator() {
   const out = document.getElementById('calc-output');
   if (!out) return;
+
   if (!ofgemRates) {
     out.textContent = 'Waiting for live cap data…';
     return;
   }
+
   const elecInput = document.getElementById('calc-elec-kwh');
   const gasInput = document.getElementById('calc-gas-kwh');
   const e = parseFloat(elecInput.value) || 0;
   const g = parseFloat(gasInput.value) || 0;
+
   if (e <= 0 && g <= 0) {
     out.textContent = 'Enter your annual usage in kWh to see an estimate.';
     return;
   }
+
   const DAYS = 365;
   const elecAnnual = ofgemRates.elec_unit * e + ofgemRates.elec_sc * DAYS;
   const gasAnnual = ofgemRates.gas_unit * g + ofgemRates.gas_sc * DAYS;
   const dualAnnual = elecAnnual + gasAnnual;
   const dualMonthly = dualAnnual / 12;
+
   out.innerHTML =
     `Estimated annual cost: <strong>£${dualAnnual.toFixed(0)}</strong>` +
     ` (~£${dualMonthly.toFixed(0)}/month)` +
@@ -522,9 +543,11 @@ async function loadDashboard() {
     const elecEl = document.getElementById('metric-elec');
     const gasEl = document.getElementById('metric-gas');
     const periodEl = document.getElementById('ofgem-period');
+    const capChangeEl = document.getElementById('cap-change-line');
     const typicalBillEl = document.getElementById('typical-bill-line');
     const highlightsEl = document.getElementById('highlights-list');
 
+    // --- Ofgem metrics ---
     if (ofgem.electricity_unit_avg && ofgem.gas_unit_avg) {
       elecEl.textContent = ofgem.electricity_unit_avg.toFixed(2) + ' p/kWh';
       gasEl.textContent = ofgem.gas_unit_avg.toFixed(2) + ' p/kWh';
@@ -561,6 +584,25 @@ async function loadDashboard() {
       }
     }
 
+    // --- Cap change vs previous / peak ---
+    const change = ofgem.change || null;
+    if (change && capChangeEl) {
+      const vp = change.prev_label;
+      const ePrev = change.elec_vs_prev_pct;
+      const gPrev = change.gas_vs_prev_pct;
+      const ePeak = change.elec_vs_peak_pct;
+      let text = `Cap change vs ${vp}: `;
+      if (ePrev != null) text += `elec ${ePrev > 0 ? '+' : ''}${ePrev}%`;
+      if (gPrev != null) text += `, gas ${gPrev > 0 ? '+' : ''}${gPrev}%`;
+      if (ePeak != null) {
+        text += `. Vs peak (${change.peak_label}) elec ${ePeak > 0 ? '+' : ''}${ePeak}%.`;
+      }
+      capChangeEl.textContent = text;
+    } else if (capChangeEl) {
+      capChangeEl.textContent = 'Cap change vs previous period: not available.';
+    }
+
+    // --- Typical bill line ---
     const tb = data.typical_bill || null;
     if (tb && tb.dual_annual_gbp) {
       const yr = tb.dual_annual_gbp.toFixed(0);
@@ -575,8 +617,8 @@ async function loadDashboard() {
     const elecInput = document.getElementById('calc-elec-kwh');
     const gasInput = document.getElementById('calc-gas-kwh');
     if (elecInput && gasInput) {
-      const defaultElec = tb?.tdcv?.electricity_kwh || 2700;
-      const defaultGas = tb?.tdcv?.gas_kwh || 11500;
+      const defaultElec = tb && tb.tdcv ? tb.tdcv.electricity_kwh : 2700;
+      const defaultGas = tb && tb.tdcv ? tb.tdcv.gas_kwh : 11500;
       elecInput.value = defaultElec;
       gasInput.value = defaultGas;
       elecInput.addEventListener('input', updateCalculator);
@@ -584,7 +626,7 @@ async function loadDashboard() {
     }
     updateCalculator();
 
-    // Agile summary
+    // --- Agile summary ---
     const agile = data.agile || {};
     const statusAgile = document.getElementById('status-agile');
     const agileAvgEl = document.getElementById('metric-agile');
@@ -619,7 +661,7 @@ async function loadDashboard() {
       }
     }
 
-    // Latest report link
+    // --- Latest report link ---
     const latestReportEl = document.getElementById('latest-report');
     if (data.date && latestReportEl) {
       latestReportEl.innerHTML =
@@ -627,24 +669,28 @@ async function loadDashboard() {
         (data.generated_at_utc ? ` · generated ${data.generated_at_utc}` : '');
     }
 
-    // Highlights (simple editorial-style bullets)
+    // --- Highlights bullets ---
     if (highlightsEl) {
       const items = [];
       if (tb && tb.dual_annual_gbp) {
         items.push(
-          `Typical dual-fuel household bill is about £${tb.dual_annual_gbp.toFixed(0)}/year `
+          `Typical dual-fuel household: about £${tb.dual_annual_gbp.toFixed(0)}/year `
           + `(~£${tb.dual_monthly_gbp.toFixed(0)}/month) under the current cap.`
         );
       }
-      if (agile.has_data && agile.avg != null) {
+      if (agile.has_data && agile.avg != null && ofgem.electricity_unit_avg) {
+        const diff = agile.avg - ofgem.electricity_unit_avg;
+        const sign = diff > 0 ? '+' : '';
         items.push(
-          `Octopus Agile electricity averages ${agile.avg.toFixed(2)} p/kWh today `
-          + `(vs cap ${ofgem.electricity_unit_avg?.toFixed(2) || '--'} p/kWh).`
+          `Octopus Agile avg ${agile.avg.toFixed(2)} p/kWh `
+          + `(${sign}${diff.toFixed(2)} vs cap elec ${ofgem.electricity_unit_avg.toFixed(2)} p/kWh).`
         );
       } else {
-        items.push(`No Octopus Agile half-hourly data available for today.`);
+        items.push('No Octopus Agile half-hourly data available for today.');
       }
-      items.push(`Data last generated at ${data.generated_at_utc || 'N/A'} (UTC).`);
+      if (data.generated_at_utc) {
+        items.push(`Snapshot generated at ${data.generated_at_utc} (UTC).`);
+      }
       highlightsEl.innerHTML = '';
       items.forEach(t => {
         const li = document.createElement('li');
@@ -667,15 +713,87 @@ async function loadDashboard() {
     const tb = document.getElementById('typical-bill-line');
     if (tb) tb.textContent = 'Typical dual-fuel bill under cap: unavailable.';
     const hl = document.getElementById('highlights-list');
-    if (hl) {
-      hl.innerHTML = '<li>Unable to load latest snapshot.</li>';
-    }
+    if (hl) hl.innerHTML = '<li>Unable to load latest snapshot.</li>';
     const out = document.getElementById('calc-output');
     if (out) out.textContent = 'Unable to load cap data for calculator.';
   }
 }
 
+async function loadCapHistoryChart() {
+  const svg = document.getElementById('cap-history-chart');
+  const legend = document.getElementById('cap-history-legend');
+  if (!svg) return;
+  try {
+    const res = await fetch('data/ofgem_history.json', { cache: 'no-store' });
+    const history = await res.json();
+    if (!Array.isArray(history) || history.length === 0) {
+      if (legend) legend.textContent = 'No history data available yet.';
+      return;
+    }
+
+    const points = history
+      .filter(h => h.electricity_unit_avg && h.gas_unit_avg)
+      .slice(-8); // 最近最多 8 个周期
+
+    if (points.length === 0) {
+      if (legend) legend.textContent = 'No history data available yet.';
+      return;
+    }
+
+    const elecVals = points.map(p => p.electricity_unit_avg);
+    const gasVals = points.map(p => p.gas_unit_avg);
+    const allVals = elecVals.concat(gasVals);
+    const minV = Math.min.apply(null, allVals);
+    const maxV = Math.max.apply(null, allVals);
+    const pad = 6;
+    const width = 260;
+    const height = 90;
+
+    function toX(i) {
+      if (points.length === 1) return width / 2;
+      return (i / (points.length - 1)) * (width - pad * 2) + pad;
+    }
+    function toY(v) {
+      if (maxV === minV) return height / 2;
+      const t = (v - minV) / (maxV - minV);
+      return (1 - t) * (height - pad * 2) + pad;
+    }
+
+    function buildPath(vals) {
+      return vals.map((v, i) => `${i === 0 ? 'M' : 'L'}${toX(i)},${toY(v)}`).join(' ');
+    }
+
+    const elecPath = buildPath(elecVals);
+    const gasPath = buildPath(gasVals);
+
+    svg.innerHTML = `
+      <polyline points="${pad},${height-pad} ${width-pad},${height-pad}"
+                fill="none" stroke="rgba(75,85,99,0.5)" stroke-width="0.4" />
+      <path d="${elecPath}" fill="none" stroke="#38bdf8" stroke-width="1.4" />
+      <path d="${gasPath}" fill="none" stroke="#22c55e" stroke-width="1.2"
+            stroke-dasharray="2.2 2.2" />
+      ${points.map((p,i)=>`
+        <circle cx="${toX(i)}" cy="${toY(p.electricity_unit_avg)}" r="1.6" fill="#38bdf8" />
+        <circle cx="${toX(i)}" cy="${toY(p.gas_unit_avg)}" r="1.4" fill="#22c55e" />
+      `).join('')}
+    `;
+
+    if (legend) {
+      const last = points[points.length - 1];
+      legend.textContent =
+        `Elec (solid) & gas (dashed). Latest period: `
+        + `${last.label || last.period}: `
+        + `${last.electricity_unit_avg.toFixed(2)}p elec, `
+        + `${last.gas_unit_avg.toFixed(2)}p gas.`;
+    }
+  } catch (e) {
+    console.error('Failed to load ofgem_history.json', e);
+    if (legend) legend.textContent = 'Failed to load cap history.';
+  }
+}
+
 loadDashboard();
+loadCapHistoryChart();
 </script>
 </body>
 </html>
