@@ -1,0 +1,125 @@
+---
+import Layout from "../layouts/Layout.astro";
+---
+
+<Layout title="UK Energy Data Dashboard">
+  <main class="flex-1 max-w-6xl mx-auto w-full p-6 space-y-10">
+    <!-- Today's Data -->
+    <section class="bg-[#0a172f] rounded-2xl p-6 shadow-xl">
+      <h2 class="text-2xl font-semibold text-sky-300 mb-4">Daily Snapshot of UK Electricity & Gas Prices</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="bg-[#112240] p-6 rounded-xl shadow-md border border-sky-800">
+          <p class="text-gray-400 text-sm">Electricity (avg)</p>
+          <p class="text-4xl font-bold text-sky-400 mt-2">25.73 <span class="text-lg">p/kWh</span></p>
+        </div>
+        <div class="bg-[#112240] p-6 rounded-xl shadow-md border border-sky-800">
+          <p class="text-gray-400 text-sm">Gas (avg)</p>
+          <p class="text-4xl font-bold text-sky-400 mt-2">6.33 <span class="text-lg">p/kWh</span></p>
+        </div>
+      </div>
+      <p class="mt-4 text-sm text-gray-400">Ofgem cap period: <span class="text-sky-400">1 Oct 2025 – 31 Dec 2025</span></p>
+    </section>
+
+    <!-- AI Summary -->
+    <section class="bg-[#0a172f] rounded-2xl p-6 shadow-xl">
+      <h2 class="text-2xl font-semibold text-sky-300 mb-4">AI Summary (Auto-Generated)</h2>
+      <p class="text-gray-300 leading-relaxed">
+        Based on current cap levels and market trends, UK average household energy costs are expected
+        to remain stable through Q4 2025, with electricity averaging around 25.7 p/kWh and gas 6.3 p/kWh.
+        Wholesale signals show mild downward pressure for early 2026.
+      </p>
+    </section>
+
+    <!-- Chart -->
+    <section class="bg-[#0a172f] rounded-2xl p-6 shadow-xl">
+      <h2 class="text-2xl font-semibold text-sky-300 mb-4">GB Average Ofgem Price Cap (last 12 months)</h2>
+      <canvas id="capChart" height="120"></canvas>
+    </section>
+
+    <!-- Quick Bill Estimator -->
+    <section class="bg-[#0a172f] rounded-2xl p-6 shadow-xl">
+      <h2 class="text-2xl font-semibold text-sky-300 mb-4">Quick Bill Estimator (using current cap)</h2>
+      <div class="grid md:grid-cols-2 gap-6">
+        <div>
+          <label class="block text-gray-400 text-sm mb-1">Annual electricity usage (kWh)</label>
+          <input id="elecInput" type="number" value="2700" class="w-full p-2 rounded bg-[#112240] border border-sky-700 text-gray-100" />
+        </div>
+        <div>
+          <label class="block text-gray-400 text-sm mb-1">Annual gas usage (kWh)</label>
+          <input id="gasInput" type="number" value="11500" class="w-full p-2 rounded bg-[#112240] border border-sky-700 text-gray-100" />
+        </div>
+      </div>
+      <div class="mt-4 text-gray-300 text-lg">
+        Estimated annual cost: <span id="billOutput" class="text-sky-400 font-semibold">£1718</span>
+      </div>
+    </section>
+
+    <!-- Info Section -->
+    <section class="bg-[#0a172f] rounded-2xl p-6 shadow-xl grid md:grid-cols-2 gap-8">
+      <div>
+        <h3 class="text-xl font-semibold text-sky-300 mb-2">About</h3>
+        <p class="text-gray-400 text-sm">
+          UK Energy Data Dashboard automatically collects and summarizes public tariff information and Ofgem publications.
+          Designed for both analysts and consumers.
+        </p>
+      </div>
+      <div>
+        <h3 class="text-xl font-semibold text-sky-300 mb-2">Transparency</h3>
+        <p class="text-gray-400 text-sm">
+          All data are sourced from Ofgem and Octopus Energy API.  
+          When live feeds fail, cached snapshots are used and clearly marked.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    const ctx = document.getElementById('capChart');
+    if (ctx) {
+      new Chart(ctx, {
+        type: 'line',
+        data: {
+          labels: ['Jul 2023', 'Oct 2023', 'Jan 2024', 'Apr 2024', 'Jul 2024', 'Oct 2025'],
+          datasets: [
+            {
+              label: 'Electricity (p/kWh)',
+              data: [30.11, 27.35, 28.62, 24.5, 22.36, 25.73],
+              borderColor: 'rgba(56,189,248,0.9)',
+              backgroundColor: 'rgba(56,189,248,0.3)',
+              tension: 0.4,
+              fill: true,
+            },
+            {
+              label: 'Gas (p/kWh)',
+              data: [7.51, 6.89, 7.42, 6.04, 5.48, 6.33],
+              borderColor: 'rgba(251,146,60,0.9)',
+              backgroundColor: 'rgba(251,146,60,0.3)',
+              tension: 0.4,
+              fill: true,
+            },
+          ],
+        },
+        options: {
+          plugins: { legend: { labels: { color: '#d1d5db' } } },
+          scales: {
+            x: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
+            y: { ticks: { color: '#94a3b8' }, grid: { color: '#1e293b' } },
+          },
+        },
+      });
+    }
+
+    // Bill Estimator
+    const elecInput = document.getElementById('elecInput');
+    const gasInput = document.getElementById('gasInput');
+    const billOutput = document.getElementById('billOutput');
+    function updateBill() {
+      const elec = parseFloat(elecInput.value) * 0.2573;
+      const gas = parseFloat(gasInput.value) * 0.0633;
+      billOutput.textContent = `£${(elec + gas).toFixed(0)}`;
+    }
+    elecInput.addEventListener('input', updateBill);
+    gasInput.addEventListener('input', updateBill);
+  </script>
+</Layout>

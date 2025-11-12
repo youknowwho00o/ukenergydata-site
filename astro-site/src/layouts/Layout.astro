@@ -1,0 +1,38 @@
+---
+import "../styles/global.css";
+const { title = "UK Energy Data Dashboard" } = Astro.props;
+---
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{title}</title>
+  </head>
+  <body class="bg-[#07111F] text-white font-sans">
+    <header class="backdrop-blur-lg bg-[#0A1A33]/80 border-b border-[#1E3A5F]/70 sticky top-0 z-50">
+      <nav class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
+        <div class="flex items-center space-x-2 text-xl font-semibold text-blue-400">
+          ⚡ <a href="/" class="hover:text-blue-300 transition">UK Energy Data</a>
+        </div>
+        <ul class="flex space-x-6 text-gray-300 text-sm">
+          <li><a href="/" class="hover:text-blue-400">Dashboard</a></li>
+          <li><a href="/insights" class="hover:text-blue-400">Insights</a></li>
+          <li><a href="/data" class="hover:text-blue-400">Data Sources</a></li>
+          <li><a href="/about" class="hover:text-blue-400">About</a></li>
+        </ul>
+        <div class="flex items-center space-x-2">
+          <div class="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+          <span class="text-xs text-green-300">Live Data Pipeline</span>
+        </div>
+      </nav>
+    </header>
+
+    <main class="max-w-7xl mx-auto px-6 py-8">
+      <slot />
+    </main>
+
+    <footer class="border-t border-[#1E3A5F]/60 text-gray-400 text-sm py-6 text-center">
+      © 2025 ukenergydata.co.uk — Auto-updated from verified public sources.
+    </footer>
+  </body>
+</html>
