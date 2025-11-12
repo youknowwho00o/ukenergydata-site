@@ -1,6 +1,6 @@
 {
-  "date": "2025-11-11",
-  "generated_at_utc": "2025-11-11 06:53 UTC",
+  "date": "2025-11-12",
+  "generated_at_utc": "2025-11-12 00:09 UTC",
   "ofgem": {
     "period": "1 Oct 2025 \u2013 31 Dec 2025 (Ofgem default tariff cap)",
     "electricity_unit_avg": 25.73,
@@ -10,7 +10,14 @@
     "source": "live",
     "source_urls": [
       "https://www.ofgem.gov.uk/information-consumers/energy-advice-households/energy-price-cap-explained"
-    ]
+    ],
+    "change": {
+      "prev_label": "Oct\u2013Dec 2024",
+      "elec_vs_prev_pct": 0.0,
+      "gas_vs_prev_pct": 0.0,
+      "peak_label": "Jul\u2013Sep 2023",
+      "elec_vs_peak_pct": -14.5
+    }
   },
   "agile": {
     "has_data": false,
