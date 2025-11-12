@@ -1,0 +1,40 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+
+// 获取 "industry" 分类下的所有文章
+const posts = await getCollection("industry");
+---
+
+<Layout title="UK Energy Industry Insights">
+  <section class="max-w-4xl mx-auto">
+    <!-- 页面标题 -->
+    <h1 class="text-3xl font-bold text-blue-300 mb-6">UK Energy Industry Insights</h1>
+
+    <!-- 简介文字 -->
+    <p class="text-gray-400 mb-8">
+      Updates, trends, and expert analysis on the UK energy market — including electricity generation, renewables, 
+      infrastructure, and policy changes shaping the industry’s future.
+    </p>
+
+    <!-- 判断有没有内容 -->
+    {posts.length === 0 ? (
+      <p class="text-gray-500 italic">No reports or analysis available yet. Please check back soon!</p>
+    ) : (
+      <ul class="space-y-4">
+        {posts.map((item) => (
+          <li class="border-b border-[#1E3A5F]/40 pb-4">
+            <!-- 链接到单篇文章 -->
+            <a href={`/industry/${item.slug}/`} class="text-blue-400 hover:text-blue-300 text-lg font-medium">
+              {item.data.title}
+            </a>
+            <!-- 日期 -->
+            <p class="text-sm text-gray-400 italic">{item.data.date}</p>
+            <!-- 简短描述 -->
+            <p class="text-gray-300 text-sm mt-1">{item.data.description}</p>
+          </li>
+        ))}
+      </ul>
+    )}
+  </section>
+</Layout>

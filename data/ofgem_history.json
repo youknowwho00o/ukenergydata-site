@@ -30,12 +30,15 @@
     "gas_unit_avg": 5.48
   },
   {
+<<<<<<< HEAD
     "period": "1 Oct 2024 \u2013 31 Dec 2024",
     "label": "Oct\u2013Dec 2024",
     "electricity_unit_avg": 25.73,
     "gas_unit_avg": 6.33
   },
   {
+=======
+>>>>>>> 4448ace (Add Astro frontend project (before rebase))
     "period": "1 Oct 2025 \u2013 31 Dec 2025 (Ofgem default tariff cap)",
     "label": "1 Oct 2025 \u2013 31 Dec 2025 (Ofgem default tariff cap)",
     "electricity_unit_avg": 25.73,

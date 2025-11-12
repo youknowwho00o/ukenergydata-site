@@ -12,9 +12,15 @@
       "https://www.ofgem.gov.uk/information-consumers/energy-advice-households/energy-price-cap-explained"
     ],
     "change": {
+<<<<<<< HEAD
       "prev_label": "Oct\u2013Dec 2024",
       "elec_vs_prev_pct": 0.0,
       "gas_vs_prev_pct": 0.0,
+=======
+      "prev_label": "Jul\u2013Sep 2024",
+      "elec_vs_prev_pct": 15.1,
+      "gas_vs_prev_pct": 15.5,
+>>>>>>> 4448ace (Add Astro frontend project (before rebase))
       "peak_label": "Jul\u2013Sep 2023",
       "elec_vs_peak_pct": -14.5
     }

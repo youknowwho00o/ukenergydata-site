@@ -13,16 +13,22 @@ ROOT = Path(__file__).resolve().parent.parent
 REPORTS_DIR = ROOT / "reports"
 DATA_DIR = ROOT / "data"
 
+<<<<<<< HEAD
 # Ofgem typical domestic consumption values (TDCV), dual fuel, Direct Debit
+=======
+>>>>>>> 4448ace (Add Astro frontend project (before rebase))
 TDCV_ELEC_KWH = 2700
 TDCV_GAS_KWH = 11500
 
 
 def ensure_reports_index() -> None:
+<<<<<<< HEAD
     """
     Ensure reports/index.html exists with a styled list skeleton.
     Safe to call every run.
     """
+=======
+>>>>>>> 4448ace (Add Astro frontend project (before rebase))
     REPORTS_DIR.mkdir(exist_ok=True)
     index_file = REPORTS_DIR / "index.html"
     if index_file.exists():
@@ -139,7 +145,10 @@ def ensure_reports_index() -> None:
 
 
 def compute_typical_bill(ofgem: Dict) -> Optional[Dict]:
+<<<<<<< HEAD
     """Compute typical dual-fuel bill under current cap using Ofgem TDCV."""
+=======
+>>>>>>> 4448ace (Add Astro frontend project (before rebase))
     try:
         elec_unit_p = float(ofgem["electricity_unit_avg"])
         gas_unit_p = float(ofgem["gas_unit_avg"])
@@ -174,9 +183,12 @@ def compute_typical_bill(ofgem: Dict) -> Optional[Dict]:
 
 
 def build_cap_history_with_current(ofgem: Dict) -> List[Dict]:
+<<<<<<< HEAD
     """
     Take manual OFGEM_CAP_HISTORY and append current cap if not already present.
     """
+=======
+>>>>>>> 4448ace (Add Astro frontend project (before rebase))
     history: List[Dict] = [dict(h) for h in OFGEM_CAP_HISTORY]
 
     current = {
@@ -197,10 +209,13 @@ def build_cap_history_with_current(ofgem: Dict) -> List[Dict]:
 
 
 def compute_cap_changes(history: List[Dict]) -> Optional[Dict]:
+<<<<<<< HEAD
     """
     Using history where last entry is current period,
     compute change vs previous period and vs peak.
     """
+=======
+>>>>>>> 4448ace (Add Astro frontend project (before rebase))
     if len(history) < 2:
         return None
 
@@ -232,9 +247,12 @@ def compute_cap_changes(history: List[Dict]) -> Optional[Dict]:
 
 
 def append_report_link(date_str: str, ofgem: Dict, agile: Dict, typical_bill: Optional[Dict]) -> None:
+<<<<<<< HEAD
     """
     Insert today's report link into reports/index.html, newest first.
     """
+=======
+>>>>>>> 4448ace (Add Astro frontend project (before rebase))
     index_file = REPORTS_DIR / "index.html"
     if not index_file.exists():
         ensure_reports_index()
@@ -244,7 +262,10 @@ def append_report_link(date_str: str, ofgem: Dict, agile: Dict, typical_bill: Op
     if marker not in html:
         return
 
+<<<<<<< HEAD
     # Build meta summary
+=======
+>>>>>>> 4448ace (Add Astro frontend project (before rebase))
     parts = []
     eu = ofgem.get("electricity_unit_avg")
     gu = ofgem.get("gas_unit_avg")
@@ -286,7 +307,7 @@ def build_daily_report() -> None:
 
     generated_at = datetime.utcnow().strftime("%Y-%m-%d %H:%M UTC")
 
-    # --- HTML daily report ---
+    # --- HTML REPORT ---
     lines = [
         "<!DOCTYPE html>",
         "<html lang='en'>",
@@ -392,7 +413,11 @@ def build_daily_report() -> None:
     outfile.write_text("\n".join(lines), encoding="utf-8")
     print(f"[ok] generated report: {outfile}")
 
+<<<<<<< HEAD
     # latest.json
+=======
+    # --- latest.json for dashboard ---
+>>>>>>> 4448ace (Add Astro frontend project (before rebase))
     DATA_DIR.mkdir(exist_ok=True)
     latest: Dict = {
         "date": today,
@@ -409,10 +434,18 @@ def build_daily_report() -> None:
     latest_path.write_text(json.dumps(latest, indent=2), encoding="utf-8")
     print(f"[ok] wrote {latest_path}")
 
+<<<<<<< HEAD
     # history json for frontend chart
+=======
+    # --- write cap history json for trend chart ---
+>>>>>>> 4448ace (Add Astro frontend project (before rebase))
     history_path = DATA_DIR / "ofgem_history.json"
     history_path.write_text(json.dumps(cap_history, indent=2), encoding="utf-8")
     print(f"[ok] wrote {history_path}")
 
+<<<<<<< HEAD
     # update reports index
+=======
+    # --- update reports index ---
+>>>>>>> 4448ace (Add Astro frontend project (before rebase))
     append_report_link(today, ofgem, agile, typical_bill)

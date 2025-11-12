@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # scripts/ofgem_history.py
 
 """
@@ -12,6 +13,13 @@ import json
 from pathlib import Path
 
 # --- Manual records of historical caps ---
+=======
+"""
+Manual record of recent Ofgem default tariff cap periods (GB average, Direct Debit).
+Values are typical unit rates incl. VAT in p/kWh.
+"""
+
+>>>>>>> 4448ace (Add Astro frontend project (before rebase))
 OFGEM_CAP_HISTORY = [
     {
         "period": "1 Jul 2023 – 30 Sep 2023",
@@ -43,6 +51,7 @@ OFGEM_CAP_HISTORY = [
         "electricity_unit_avg": 22.36,
         "gas_unit_avg": 5.48,
     },
+<<<<<<< HEAD
     {
         "period": "1 Oct 2024 – 31 Dec 2024",
         "label": "Oct–Dec 2024",
@@ -67,3 +76,6 @@ def write_history_json():
 # --- Allow manual run ---
 if __name__ == "__main__":
     write_history_json()
+=======
+]
+>>>>>>> 4448ace (Add Astro frontend project (before rebase))

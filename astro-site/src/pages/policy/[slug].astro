@@ -1,0 +1,48 @@
+---
+import Layout from "../../layouts/Layout.astro";
+import { getCollection } from "astro:content";
+
+// 动态路由：生成每个政策页面的路径
+export async function getStaticPaths() {
+  const policies = await getCollection("policy");
+  return policies.map((p) => ({
+    params: { slug: p.slug },
+    props: { policy: p },
+  }));
+}
+
+// 接收当前政策内容
+const { policy } = Astro.props;
+---
+
+<Layout title={policy.data.title}>
+  <article class="max-w-3xl mx-auto py-12 px-4 prose prose-invert lg:prose-xl">
+    <header class="mb-8">
+      <h1 class="text-4xl font-bold mb-2">{policy.data.title}</h1>
+      {policy.data.date && (
+        <p class="text-sm text-gray-400 italic">
+          {new Date(policy.data.date).toLocaleDateString("en-GB", {
+            year: "numeric",
+            month: "long",
+            day: "numeric",
+          })}
+        </p>
+      )}
+      {policy.data.description && (
+        <p class="mt-2 text-sky-300">{policy.data.description}</p>
+      )}
+      <hr class="my-6 border-gray-700" />
+    </header>
+
+    <section class="prose prose-invert max-w-none">
+      {policy.body ? <Fragment set:html={policy.body} /> : <p>No content available.</p>}
+    </section>
+
+    <footer class="mt-10 text-sm text-gray-500 italic border-t border-gray-700 pt-4">
+      <p>
+        🔍 This article is part of the <strong>UK Energy Policy Library</strong>.
+        Find more updates on <a href="/policy" class="text-sky-400 hover:underline">UK energy policies</a>.
+      </p>
+    </footer>
+  </article>
+</Layout>
