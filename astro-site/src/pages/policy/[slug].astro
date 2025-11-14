@@ -1,48 +1,43 @@
 ---
 import Layout from "../../layouts/Layout.astro";
 import { getCollection } from "astro:content";
+import { marked } from "marked"; // ✅ 用于解析 Markdown 正文
 
-// 动态路由：生成每个政策页面的路径
+// ⚙️ 生成静态路径
 export async function getStaticPaths() {
   const policies = await getCollection("policy");
-  return policies.map((p) => ({
-    params: { slug: p.slug },
-    props: { policy: p },
+  return policies.map((policy) => ({
+    params: { slug: policy.slug },
+    props: { policy },
   }));
 }
 
-// 接收当前政策内容
+// 🧩 获取文章内容与元数据
 const { policy } = Astro.props;
+const { data, body } = policy;
+
+// ✅ 将 Markdown 转换为 HTML
+const htmlContent = marked.parse(body);
 ---
 
-<Layout title={policy.data.title}>
-  <article class="max-w-3xl mx-auto py-12 px-4 prose prose-invert lg:prose-xl">
-    <header class="mb-8">
-      <h1 class="text-4xl font-bold mb-2">{policy.data.title}</h1>
-      {policy.data.date && (
-        <p class="text-sm text-gray-400 italic">
-          {new Date(policy.data.date).toLocaleDateString("en-GB", {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          })}
-        </p>
-      )}
-      {policy.data.description && (
-        <p class="mt-2 text-sky-300">{policy.data.description}</p>
-      )}
-      <hr class="my-6 border-gray-700" />
-    </header>
+<Layout title={data.title}>
+  <article
+    class="prose prose-invert max-w-4xl mx-auto px-6 py-12 bg-[#0B1625]/50 rounded-2xl shadow-lg border border-[#1E3A5F]/60"
+  >
+    <!-- 🕒 日期，仅此一处显示 -->
+    <p class="text-sm italic text-gray-400 mb-6">{data.date}</p>
 
-    <section class="prose prose-invert max-w-none">
-      {policy.body ? <Fragment set:html={policy.body} /> : <p>No content available.</p>}
-    </section>
+    <!-- 📜 正文内容 -->
+    <div
+      class="prose prose-invert prose-headings:text-blue-300 prose-a:text-blue-400 prose-strong:text-white prose-p:text-gray-200 prose-li:marker:text-blue-400 leading-relaxed text-[1.05rem]"
+      set:html={htmlContent}
+    ></div>
 
-    <footer class="mt-10 text-sm text-gray-500 italic border-t border-gray-700 pt-4">
-      <p>
-        🔍 This article is part of the <strong>UK Energy Policy Library</strong>.
-        Find more updates on <a href="/policy" class="text-sky-400 hover:underline">UK energy policies</a>.
-      </p>
+    <!-- 🧭 页脚 -->
+    <footer
+      class="mt-10 pt-6 border-t border-[#1E3A5F]/40 text-sm text-gray-500 text-center"
+    >
+      Source: UK Energy Data AI Policy Generator • Auto-updated
     </footer>
   </article>
 </Layout>

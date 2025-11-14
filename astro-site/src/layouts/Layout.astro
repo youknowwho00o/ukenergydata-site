@@ -1,20 +1,24 @@
 ---
 import "../styles/global.css";
-const { title = "UK Energy Data Dashboard" } = Astro.props;
+const { title = "UK Energy Data Dashboard", date, description } = Astro.props;
 ---
+
 <html lang="en">
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{title}</title>
   </head>
-  <body class="bg-[#07111F] text-white font-sans">
+
+  <body class="bg-[#07111F] text-white font-sans leading-relaxed antialiased">
+    <!-- 🌐 顶部导航栏 -->
     <header class="backdrop-blur-lg bg-[#0A1A33]/80 border-b border-[#1E3A5F]/70 sticky top-0 z-50">
       <nav class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <div class="flex items-center space-x-2 text-xl font-semibold text-blue-400">
           ⚡ <a href="/" class="hover:text-blue-300 transition">UK Energy Data</a>
         </div>
-        <ul class="flex space-x-6 text-gray-300 text-sm">
+
+        <ul class="flex space-x-6 text-gray-300 text-sm font-medium">
           <li><a href="/" class="hover:text-blue-400">Dashboard</a></li>
           <li><a href="/insights" class="hover:text-blue-400">Insights</a></li>
           <li><a href="/policy" class="hover:text-blue-400">Policy</a></li>
@@ -32,12 +36,48 @@ const { title = "UK Energy Data Dashboard" } = Astro.props;
       </nav>
     </header>
 
-    <main class="max-w-7xl mx-auto px-6 py-8">
+    <!-- 📰 文章标题区块 -->
+    {
+      title !== "UK Energy Data Dashboard" && (
+        <section class="max-w-3xl mx-auto px-6 pt-14 pb-6 text-center">
+          <h1 class="text-4xl md:text-5xl font-extrabold text-blue-300 tracking-tight mb-4 leading-tight">
+            {title}
+          </h1>
+
+          {date && (
+            <p class="text-gray-400 italic mb-3">
+              {new Date(date).toLocaleDateString("en-GB", {
+                day: "2-digit",
+                month: "long",
+                year: "numeric"
+              })}
+            </p>
+          )}
+
+          {description && (
+            <p class="text-blue-200 text-lg max-w-2xl mx-auto leading-relaxed">
+              {description}
+            </p>
+          )}
+
+          <div class="h-1 w-24 mx-auto mt-6 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 rounded-full"></div>
+        </section>
+      )
+    }
+
+    <!-- 📄 正文内容（美观排版版式） -->
+    <main
+      class="prose prose-invert prose-lg max-w-3xl mx-auto px-6 pb-16
+      prose-headings:text-blue-300 prose-h2:mt-10 prose-h2:mb-4 prose-h3:mt-8 prose-h3:mb-3
+      prose-p:leading-relaxed prose-p:my-4 prose-li:my-1 prose-a:text-blue-400 hover:prose-a:text-cyan-300
+      prose-strong:text-blue-200 prose-blockquote:border-l-blue-400 prose-blockquote:pl-4 prose-blockquote:text-blue-100
+      prose-img:rounded-xl prose-hr:border-[#1E3A5F]/60">
       <slot />
     </main>
 
-    <footer class="border-t border-[#1E3A5F]/60 text-gray-400 text-sm py-6 text-center">
-      © 2025 ukenergydata.co.uk — Auto-updated from verified public sources.
+    <!-- 🧭 页脚 -->
+    <footer class="border-t border-[#1E3A5F]/60 text-gray-400 text-sm py-6 text-center mt-10">
+      © 2025 <span class="text-blue-400">ukenergydata.co.uk</span> — Auto-updated from verified public sources.
     </footer>
   </body>
 </html>
