@@ -1,65 +1,87 @@
 import os
+import base64
 from datetime import datetime
 from openai import OpenAI
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-output_dir = "astro-site/src/content/news"
-os.makedirs(output_dir, exist_ok=True)
+CATEGORY = "news"
+TITLE_PREFIX = "UK Energy News Update"
+COVER_DIR = f"astro-site/public/{CATEGORY}"
+CONTENT_DIR = f"astro-site/src/content/{CATEGORY}"
+IMAGE_SIZE = "1536x1024"
 
-today = datetime.now().strftime("%Y-%m-%d")
-prompt = f"""
-Write a **UK energy news update** in Markdown format about current events, announcements, or market trends
-relevant to the UK energy industry as of today.
+os.makedirs(COVER_DIR, exist_ok=True)
+os.makedirs(CONTENT_DIR, exist_ok=True)
 
-Follow this structure:
 
-## Headline Summary
-Give a short summary of the key news event.
+def generate_cover_image(date_str: str) -> str:
+    print("🖼  Generating AI cover image (news)...")
 
-## Details
-Describe what happened, who is involved, and why it matters.
+    prompt = (
+        "dark futuristic UK energy news visualization — power grid, electricity flows, "
+        "renewables icons, neon blue glowing lines, energy network nodes, no text."
+    )
 
-## Context
-Provide background context or related developments.
+    result = client.images.generate(
+        model="gpt-image-1",
+        prompt=prompt,
+        size=IMAGE_SIZE,
+    )
 
-## Implications
-Discuss what this might mean for energy policy, consumers, or companies.
+    image_base64 = result.data[0].b64_json
+    filename = f"{date_str}-cover.png"
+    save_path = os.path.join(COVER_DIR, filename)
 
-## Sources
-List 2–3 credible UK sources (Ofgem, GOV.UK, BBC, The Guardian).
+    with open(save_path, "wb") as f:
+        f.write(base64.b64decode(image_base64))
 
-Use Markdown formatting and ensure clean paragraph spacing.
+    print(f"✅ Cover saved: {save_path}")
+    return filename
+
+
+def generate_news_article():
+    today = datetime.now().strftime("%Y-%m-%d")
+    md_filename = f"{today}-auto-news.md"
+    md_path = os.path.join(CONTENT_DIR, md_filename)
+
+    cover_filename = generate_cover_image(today)
+    cover_url = f"/{CATEGORY}/{cover_filename}"
+
+    print("🧠 Generating AI news article...")
+
+    prompt = f"""
+Write a UK energy news roundup for {today}.
+Include:
+- latest Ofgem announcements
+- government energy-related statements
+- industry market headlines
+- updates from National Grid ESO or BEIS
+Tone: factual journalism, concise, structured.
 """
 
-print("🧠 Generating AI news article...")
+    result = client.responses.create(
+        model="gpt-4.1-mini",
+        input=prompt,
+    )
 
-response = client.chat.completions.create(
-    model="gpt-4o-mini",
-    messages=[
-        {"role": "system", "content": "You are an energy journalist reporting on UK energy market developments."},
-        {"role": "user", "content": prompt},
-    ],
-    temperature=0.7,
-)
+    article = result.output_text
 
-article_content = response.choices[0].message.content.strip()
-if article_content.startswith("# "):
-    article_content = "\n".join(article_content.split("\n")[1:]).strip()
-
-title = f"UK Energy News Update {today}"
-description = "Latest UK energy market headlines and industry updates."
-frontmatter = f"""---
-title: "{title}"
+    md = f"""---
+title: "{TITLE_PREFIX} {today}"
 date: "{today}"
-description: "{description}"
+cover: "{cover_url}"
 ---
 
+{article}
 """
 
-filename = f"{today}-auto-news.md"
-filepath = os.path.join(output_dir, filename)
-with open(filepath, "w", encoding="utf-8") as f:
-    f.write(frontmatter + article_content)
+    with open(md_path, "w", encoding="utf-8") as f:
+        f.write(md)
 
-print(f"✅ Generated: {filepath}")
+    print(f"✅ Markdown saved: {md_path}")
+    print("🎉 News generation complete!")
+
+
+if __name__ == "__main__":
+    generate_news_article()

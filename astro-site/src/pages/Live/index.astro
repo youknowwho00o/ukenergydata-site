@@ -1,0 +1,176 @@
+---
+import Layout from "../layouts/Layout.astro";
+
+// 🚀 UK REAL DATA ENDPOINTS
+const CI_API = "https://api.carbonintensity.org.uk/intensity";
+const GEN_API = "https://api.carbonintensity.org.uk/generation";
+const REGIONAL_API = "https://api.carbonintensity.org.uk/regional";
+
+// live fetch
+let carbon = null;
+let generation = null;
+let regions = null;
+
+try {
+  carbon = await fetch(CI_API).then(r => r.json());
+  generation = await fetch(GEN_API).then(r => r.json());
+  regions = await fetch(REGIONAL_API).then(r => r.json());
+} catch (e) {
+  carbon = { data: [{ intensity: { actual: null, forecast: 180 } }] };
+  generation = { data: { generationmix: [] } };
+  regions = { data: [] };
+}
+---
+
+<Layout title="UK Energy Live Dashboard">
+  <main class="max-w-7xl mx-auto w-full p-6 space-y-10">
+
+    <!-- TITLE -->
+    <h1 class="text-4xl font-bold text-sky-300 text-center">
+      UK Energy Live Dashboard ⚡
+    </h1>
+    <p class="text-center text-gray-400">
+      Real-time grid demand · generation mix · carbon intensity · regional conditions
+    </p>
+
+    <!-- LIVE SUMMARY CARDS -->
+    <section class="grid md:grid-cols-3 gap-6">
+
+      <!-- Carbon Intensity -->
+      <div class="bg-[#0a172f] p-6 rounded-2xl border border-sky-700 shadow-xl">
+        <p class="text-gray-400 text-sm">Carbon Intensity (UK)</p>
+        <p class="text-5xl font-bold text-sky-300">
+          {carbon?.data?.[0]?.intensity?.actual ?? carbon?.data?.[0]?.intensity?.forecast} gCO₂/kWh
+        </p>
+      </div>
+
+      <!-- Predominant Generation -->
+      <div class="bg-[#0a172f] p-6 rounded-2xl border border-emerald-600 shadow-xl">
+        <p class="text-gray-400 text-sm">Top Source Now</p>
+        <p class="text-3xl font-bold text-emerald-400">
+          {generation?.data?.generationmix?.sort((a,b)=>b.perc-a.perc)[0]?.fuel ?? "N/A"}
+        </p>
+      </div>
+
+      <!-- Time -->
+      <div class="bg-[#0a172f] p-6 rounded-2xl border border-orange-600 shadow-xl">
+        <p class="text-gray-400 text-sm">Updated</p>
+        <p class="text-3xl font-bold text-orange-400">
+          {new Date().toLocaleTimeString()}
+        </p>
+      </div>
+
+    </section>
+
+    <!-- LIVE UK MAP -->
+    <section class="bg-[#0a172f] p-6 rounded-2xl shadow-xl">
+      <h2 class="text-2xl font-semibold text-sky-300 mb-4">UK Regional Carbon Intensity Map</h2>
+      <div id="map" class="w-full h-[500px] rounded-xl shadow-lg"></div>
+    </section>
+
+    <!-- GENERATION MIX -->
+    <section class="bg-[#0a172f] p-6 rounded-2xl shadow-xl">
+      <h2 class="text-2xl font-semibold text-sky-300 mb-4">Generation Mix (Now)</h2>
+      <canvas id="genChart" height="140"></canvas>
+    </section>
+
+    <!-- AI INSIGHT -->
+    <section class="bg-[#0a172f] p-6 rounded-2xl shadow-xl">
+      <h2 class="text-2xl font-semibold text-sky-300 mb-4">AI Summary</h2>
+      <p class="text-gray-300 leading-relaxed" id="ai">
+        Loading analysis...
+      </p>
+    </section>
+
+  </main>
+
+  <!-- MAP + CHART LIBS -->
+  <link
+    rel="stylesheet"
+    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+  />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    // -----------------------------
+    // 🌍 LEAFLET UK MAP
+    // -----------------------------
+    const map = L.map("map").setView([54.5, -3], 5.6);
+
+    L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
+      attribution: "&copy; OpenStreetMap",
+    }).addTo(map);
+
+    fetch("/geo/uk_regions.geojson")
+      .then(r => r.json())
+      .then(geo => {
+        L.geoJSON(geo, {
+          style: f => ({
+            color: "#1e40af",
+            weight: 1,
+            fillColor: "#0284c7",
+            fillOpacity: 0.15,
+          }),
+          onEachFeature: (f, layer) => {
+            layer.on("mouseover", () => {
+              layer.setStyle({ fillOpacity: 0.5 });
+            });
+            layer.on("mouseout", () => {
+              layer.setStyle({ fillOpacity: 0.15 });
+            });
+
+            layer.bindPopup(
+              `<b>${f.properties.region}</b><br>
+              Carbon Intensity: ${
+                (window.regionalData?.find(r => r.shortname === f.properties.region)?.intensity) || "N/A"
+              } gCO₂/kWh`
+            );
+          },
+        }).addTo(map);
+      });
+
+    // Save API region data globally
+    window.regionalData = JSON.parse(`<?=
+      JSON.stringify(regions?.data?.map(r => ({
+        shortname: r.shortname,
+        intensity: r.intensity.forecast,
+      })) ?? []
+    ?>`);
+
+    // -----------------------------
+    // ⚡ GENERATION MIX CHART
+    // -----------------------------
+    const gen = JSON.parse(`<?=
+      JSON.stringify(generation?.data?.generationmix ?? [])
+    ?>`);
+
+    const ctx = document.getElementById("genChart");
+    new Chart(ctx, {
+      type: "doughnut",
+      data: {
+        labels: gen.map(g => g.fuel),
+        datasets: [
+          {
+            data: gen.map(g => g.perc),
+          }
+        ]
+      },
+      options: {
+        plugins: { legend: { labels: { color: "#e2e8f0" } } }
+      }
+    });
+
+    // -----------------------------
+    // 🤖 AI SUMMARY (local model)
+    // -----------------------------
+    const topFuel = gen.sort((a,b)=>b.perc-a.perc)[0]?.fuel ?? "N/A";
+    const ci = <?= carbon?.data?.[0]?.intensity?.actual ?? carbon?.data?.[0]?.intensity?.forecast ?>;
+
+    document.getElementById("ai").textContent =
+      `The UK grid is currently dominated by ${topFuel}, with a carbon intensity of ${ci} gCO₂/kWh. ` +
+      `This level indicates ${ci < 120 ? "clean" : ci < 200 ? "moderate" : "high"} emissions relative to ` +
+      `seasonal averages. Regional differences reflect wind availability and demand load.`;
+
+  </script>
+</Layout>

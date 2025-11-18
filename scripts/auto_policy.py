@@ -1,73 +1,87 @@
 import os
+import base64
 from datetime import datetime
 from openai import OpenAI
 
-# ✅ 初始化 OpenAI 客户端
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# 📁 输出路径
-output_dir = "astro-site/src/content/policy"
-os.makedirs(output_dir, exist_ok=True)
+CATEGORY = "policy"
+TITLE_PREFIX = "UK Energy Policy Update"
+COVER_DIR = f"astro-site/public/{CATEGORY}"
+CONTENT_DIR = f"astro-site/src/content/{CATEGORY}"
+IMAGE_SIZE = "1536x1024"
 
-# 🧠 生成提示
-today = datetime.now().strftime("%Y-%m-%d")
-prompt = f"""
-Write a **UK energy policy article** in Markdown format about the latest government energy policy or program as of today.
+os.makedirs(COVER_DIR, exist_ok=True)
+os.makedirs(CONTENT_DIR, exist_ok=True)
 
-Follow this structure:
 
-## Overview
-Briefly introduce the topic and its policy background.
+def generate_cover_image(date_str: str) -> str:
+    print("🖼  Generating AI cover image (policy)...")
 
-## Key Points
-Summarize the main elements of the policy, such as investment targets, renewable goals, timeframes, or institutions involved.
+    prompt = (
+        "dark futuristic UK government energy policy theme — Parliament silhouette, "
+        "documents glowing, regulatory data visuals, blue neon light, no text."
+    )
 
-## Impact on the UK Energy Market
-Explain how this affects UK households, businesses, or the overall energy transition.
+    result = client.images.generate(
+        model="gpt-image-1",
+        prompt=prompt,
+        size=IMAGE_SIZE,
+    )
 
-## Expert Analysis
-Include insights or interpretations based on current UK energy context and global trends.
+    image_base64 = result.data[0].b64_json
+    filename = f"{date_str}-cover.png"
+    save_path = os.path.join(COVER_DIR, filename)
 
-## Sources
-List 2–3 real credible UK government or media sources (Ofgem, BEIS, GOV.UK, BBC).
+    with open(save_path, "wb") as f:
+        f.write(base64.b64decode(image_base64))
 
-Use **Markdown formatting** for headings, bullet points, and bold keywords.
-Make sure every paragraph is separated by a blank line.
+    print(f"✅ Cover saved: {save_path}")
+    return filename
+
+
+def generate_policy_article():
+    today = datetime.now().strftime("%Y-%m-%d")
+    md_filename = f"{today}-auto-policy.md"
+    md_path = os.path.join(CONTENT_DIR, md_filename)
+
+    cover_filename = generate_cover_image(today)
+    cover_url = f"/{CATEGORY}/{cover_filename}"
+
+    print("🧠 Generating AI policy article...")
+
+    prompt = f"""
+Write a detailed UK energy policy update for {today}.
+Include:
+- latest government energy policy announcements
+- subsidies / schemes (Boiler Upgrade Scheme, CfD, ECO etc.)
+- regulatory updates from Ofgem
+- expected impacts on businesses & households
+Tone: factual + expert.
 """
 
-print("🧠 Generating AI policy article...")
+    result = client.responses.create(
+        model="gpt-4.1-mini",
+        input=prompt,
+    )
 
-# 🚀 调用 OpenAI 模型
-response = client.chat.completions.create(
-    model="gpt-4o-mini",
-    messages=[
-        {"role": "system", "content": "You are a UK energy policy expert writing for a public energy data website."},
-        {"role": "user", "content": prompt},
-    ],
-    temperature=0.7,
-)
+    article = result.output_text
 
-article_content = response.choices[0].message.content.strip()
-
-# 🧹 删除首行 "# Title" 避免重复显示
-if article_content.startswith("# "):
-    article_content = "\n".join(article_content.split("\n")[1:]).strip()
-
-# 🧱 frontmatter 元数据
-title = "UK Energy Policy Update " + today
-description = "Latest update on UK energy policy developments and regulatory changes."
-frontmatter = f"""---
-title: "{title}"
+    md = f"""---
+title: "{TITLE_PREFIX} {today}"
 date: "{today}"
-description: "{description}"
+cover: "{cover_url}"
 ---
 
+{article}
 """
 
-# 💾 输出 Markdown
-filename = f"{today}-auto-policy.md"
-filepath = os.path.join(output_dir, filename)
-with open(filepath, "w", encoding="utf-8") as f:
-    f.write(frontmatter + article_content)
+    with open(md_path, "w", encoding="utf-8") as f:
+        f.write(md)
 
-print(f"✅ Generated: {filepath}")
+    print(f"✅ Markdown saved: {md_path}")
+    print("🎉 Policy generation complete!")
+
+
+if __name__ == "__main__":
+    generate_policy_article()

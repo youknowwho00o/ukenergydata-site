@@ -1,65 +1,88 @@
 import os
+import base64
 from datetime import datetime
 from openai import OpenAI
 
 client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-output_dir = "astro-site/src/content/energy-saving"
-os.makedirs(output_dir, exist_ok=True)
+CATEGORY = "energy-saving"
+TITLE_PREFIX = "UK Energy Saving Guide"
+COVER_DIR = f"astro-site/public/{CATEGORY}"
+CONTENT_DIR = f"astro-site/src/content/{CATEGORY}"
+IMAGE_SIZE = "1536x1024"
 
-today = datetime.now().strftime("%Y-%m-%d")
-prompt = f"""
-Write a **UK energy-saving guide** in Markdown format that provides practical advice to help households
-and businesses reduce energy use and carbon emissions.
+os.makedirs(COVER_DIR, exist_ok=True)
+os.makedirs(CONTENT_DIR, exist_ok=True)
 
-Follow this structure:
 
-## Introduction
-Explain the motivation for energy saving and its importance in the UK context.
+def generate_cover_image(date_str: str) -> str:
+    print("🖼  Generating AI cover image (energy-saving)...")
 
-## Practical Tips
-List 5–7 actionable tips for saving energy at home or at work.
+    prompt = (
+        "dark futuristic home energy efficiency theme — heat pumps, insulation, smart meters, "
+        "glowing green energy lines, low-carbon home design, no text."
+    )
 
-## Benefits
-Describe both financial and environmental benefits.
+    result = client.images.generate(
+        model="gpt-image-1",
+        prompt=prompt,
+        size=IMAGE_SIZE,
+    )
 
-## Government Support
-Mention relevant UK programs, grants, or incentives.
+    image_base64 = result.data[0].b64_json
+    filename = f"{date_str}-cover.png"
+    save_path = os.path.join(COVER_DIR, filename)
 
-## Sources
-Include credible references (GOV.UK, Ofgem, Energy Saving Trust).
+    with open(save_path, "wb") as f:
+        f.write(base64.b64decode(image_base64))
 
-Use Markdown formatting with lists and spacing for easy reading.
+    print(f"✅ Cover saved: {save_path}")
+    return filename
+
+
+def generate_energy_article():
+    today = datetime.now().strftime("%Y-%m-%d")
+    md_filename = f"{today}-auto-energy.md"
+    md_path = os.path.join(CONTENT_DIR, md_filename)
+
+    cover_filename = generate_cover_image(today)
+    cover_url = f"/{CATEGORY}/{cover_filename}"
+
+    print("🧠 Generating AI energy-saving guide...")
+
+    prompt = f"""
+Write a UK home energy-saving guide for {today}.
+Include:
+- top methods to reduce electricity and gas usage
+- heat pump advice
+- insulation recommendations
+- smart meter insights
+- cost savings estimates
+Tone: practical, helpful, consumer-friendly.
 """
 
-print("🧠 Generating AI energy-saving guide...")
+    result = client.responses.create(
+        model="gpt-4.1-mini",
+        input=prompt,
+    )
 
-response = client.chat.completions.create(
-    model="gpt-4o-mini",
-    messages=[
-        {"role": "system", "content": "You are a UK energy efficiency advisor writing practical guides."},
-        {"role": "user", "content": prompt},
-    ],
-    temperature=0.7,
-)
+    article = result.output_text
 
-article_content = response.choices[0].message.content.strip()
-if article_content.startswith("# "):
-    article_content = "\n".join(article_content.split("\n")[1:]).strip()
-
-title = f"UK Energy Saving Guide {today}"
-description = "Daily UK guide on reducing energy use and improving efficiency."
-frontmatter = f"""---
-title: "{title}"
+    md = f"""---
+title: "{TITLE_PREFIX} {today}"
 date: "{today}"
-description: "{description}"
+cover: "{cover_url}"
 ---
 
+{article}
 """
 
-filename = f"{today}-auto-energy.md"
-filepath = os.path.join(output_dir, filename)
-with open(filepath, "w", encoding="utf-8") as f:
-    f.write(frontmatter + article_content)
+    with open(md_path, "w", encoding="utf-8") as f:
+        f.write(md)
 
-print(f"✅ Generated: {filepath}")
+    print(f"✅ Markdown saved: {md_path}")
+    print("🎉 Energy-saving generation complete!")
+
+
+if __name__ == "__main__":
+    generate_energy_article()
