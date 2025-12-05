@@ -1,5 +1,4 @@
-<details>
-<summary>点击展开（这是英国 14 大电力区域 Polygon 数据）</summary>
+
 {
   "type": "FeatureCollection",
   "name": "uk_regions",

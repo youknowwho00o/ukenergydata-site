@@ -25,7 +25,6 @@ try {
 <Layout title="UK Energy Live Dashboard">
   <main class="max-w-7xl mx-auto w-full p-6 space-y-10">
 
-    <!-- TITLE -->
     <h1 class="text-4xl font-bold text-sky-300 text-center">
       UK Energy Live Dashboard ⚡
     </h1>
@@ -33,7 +32,6 @@ try {
       Real-time grid demand · generation mix · carbon intensity · regional conditions
     </p>
 
-    <!-- LIVE SUMMARY CARDS -->
     <section class="grid md:grid-cols-3 gap-6">
 
       <!-- Carbon Intensity -->
@@ -62,6 +60,7 @@ try {
 
     </section>
 
+
     <!-- LIVE UK MAP -->
     <section class="bg-[#0a172f] p-6 rounded-2xl shadow-xl">
       <h2 class="text-2xl font-semibold text-sky-300 mb-4">UK Regional Carbon Intensity Map</h2>
@@ -85,14 +84,12 @@ try {
   </main>
 
   <!-- MAP + CHART LIBS -->
-  <link
-    rel="stylesheet"
-    href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
-  />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
   <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <script>
+
     // -----------------------------
     // 🌍 LEAFLET UK MAP
     // -----------------------------
@@ -113,48 +110,36 @@ try {
             fillOpacity: 0.15,
           }),
           onEachFeature: (f, layer) => {
-            layer.on("mouseover", () => {
-              layer.setStyle({ fillOpacity: 0.5 });
-            });
-            layer.on("mouseout", () => {
-              layer.setStyle({ fillOpacity: 0.15 });
-            });
+            layer.on("mouseover", () => layer.setStyle({ fillOpacity: 0.5 }));
+            layer.on("mouseout", () => layer.setStyle({ fillOpacity: 0.15 }));
 
-            layer.bindPopup(
-              `<b>${f.properties.region}</b><br>
-              Carbon Intensity: ${
-                (window.regionalData?.find(r => r.shortname === f.properties.region)?.intensity) || "N/A"
-              } gCO₂/kWh`
-            );
+            const match = window.regionalData?.find(r => r.shortname === f.properties.region);
+            const val = match?.intensity ?? "N/A";
+
+            layer.bindPopup(`<b>${f.properties.region}</b><br>Carbon Intensity: ${val} gCO₂/kWh`);
           },
         }).addTo(map);
       });
 
-    // Save API region data globally
-    window.regionalData = JSON.parse(`<?=
-      JSON.stringify(regions?.data?.map(r => ({
-        shortname: r.shortname,
-        intensity: r.intensity.forecast,
-      })) ?? []
-    ?>`);
+    // -----------------------------
+    // 📌 Save region data
+    // -----------------------------
+    window.regionalData = regions?.data?.map(r => ({
+      shortname: r.shortname,
+      intensity: r.intensity.forecast,
+    })) ?? [];
 
     // -----------------------------
     // ⚡ GENERATION MIX CHART
     // -----------------------------
-    const gen = JSON.parse(`<?=
-      JSON.stringify(generation?.data?.generationmix ?? [])
-    ?>`);
+    const gen = generation?.data?.generationmix ?? [];
 
     const ctx = document.getElementById("genChart");
     new Chart(ctx, {
       type: "doughnut",
       data: {
         labels: gen.map(g => g.fuel),
-        datasets: [
-          {
-            data: gen.map(g => g.perc),
-          }
-        ]
+        datasets: [ { data: gen.map(g => g.perc) } ]
       },
       options: {
         plugins: { legend: { labels: { color: "#e2e8f0" } } }
@@ -162,10 +147,10 @@ try {
     });
 
     // -----------------------------
-    // 🤖 AI SUMMARY (local model)
+    // 🤖 AI SUMMARY
     // -----------------------------
     const topFuel = gen.sort((a,b)=>b.perc-a.perc)[0]?.fuel ?? "N/A";
-    const ci = <?= carbon?.data?.[0]?.intensity?.actual ?? carbon?.data?.[0]?.intensity?.forecast ?>;
+    const ci = carbon?.data?.[0]?.intensity?.actual ?? carbon?.data?.[0]?.intensity?.forecast;
 
     document.getElementById("ai").textContent =
       `The UK grid is currently dominated by ${topFuel}, with a carbon intensity of ${ci} gCO₂/kWh. ` +

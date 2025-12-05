@@ -1,0 +1,24 @@
+Traceback (most recent call last):
+  File "/Users/kunlinli/ukenergydata-site/scripts/auto_policy.py", line 6, in <module>
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+  File "/Users/kunlinli/Library/Python/3.9/lib/python/site-packages/openai/_client.py", line 137, in __init__
+    raise OpenAIError(
+openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+Traceback (most recent call last):
+  File "/Users/kunlinli/ukenergydata-site/scripts/auto_news.py", line 6, in <module>
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+  File "/Users/kunlinli/Library/Python/3.9/lib/python/site-packages/openai/_client.py", line 137, in __init__
+    raise OpenAIError(
+openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+Traceback (most recent call last):
+  File "/Users/kunlinli/ukenergydata-site/scripts/auto_industry.py", line 6, in <module>
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+  File "/Users/kunlinli/Library/Python/3.9/lib/python/site-packages/openai/_client.py", line 137, in __init__
+    raise OpenAIError(
+openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+Traceback (most recent call last):
+  File "/Users/kunlinli/ukenergydata-site/scripts/auto_energy.py", line 6, in <module>
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+  File "/Users/kunlinli/Library/Python/3.9/lib/python/site-packages/openai/_client.py", line 137, in __init__
+    raise OpenAIError(
+openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable

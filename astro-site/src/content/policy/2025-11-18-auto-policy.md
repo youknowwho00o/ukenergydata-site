@@ -6,13 +6,13 @@ cover: "/policy/2025-11-18-cover.png"
 
 **UK Energy Policy Update – 18 November 2025**
 
----
+--- 
 
 ### 1. Government Energy Policy Announcements
 
 On 17 November 2025, the UK Government released its latest comprehensive energy policy update emphasizing its commitment to net zero by 2050, with accelerated interim targets for 2030. Key highlights include:
 
-- **Increased Allocation for Low Carbon Energy**: The government announced a £3.5 billion enhancement to the Contracts for Difference (CfD) scheme, targeting further offshore wind capacity expansions and new small modular reactor (SMR) developments.
+- **Increased Allocation for Low Carbon Energy**: The governmenßt announced a £3.5 billion enhancement to the Contracts for Difference (CfD) scheme, targeting further offshore wind capacity expansions and new small modular reactor (SMR) developments.
 - **Hydrogen Strategy Advancement**: Funding of £500 million was allocated to develop large-scale green hydrogen production facilities, aiming to integrate hydrogen into industrial and heating sectors.
 - **Energy Efficiency and Retrofit Focus**: Expansion of the Energy Company Obligation (ECO) scheme to support more households in installing insulation, low-carbon heating, and ventilation systems. The government also set an ambition to phase out gas boilers in newly constructed homes by 2030.
 - **Smart Grid and Storage Investment**: New initiatives support grid flexibility, including incentives for battery storage and demand response technologies.

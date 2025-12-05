@@ -1,6 +1,18 @@
 ---
 import "../styles/global.css";
-const { title = "UK Energy Data Dashboard", date, description } = Astro.props;
+
+// 💥 万无一失：props 全部 optional，并提供默认值
+interface Props {
+  title?: string;
+  date?: string;
+  description?: string;
+}
+
+const {
+  title = "Untitled",
+  date = "",
+  description = ""
+} = (Astro.props ?? {}) as Props;
 ---
 
 <html lang="en">
@@ -11,7 +23,6 @@ const { title = "UK Energy Data Dashboard", date, description } = Astro.props;
   </head>
 
   <body class="bg-[#07111F] text-white font-sans leading-relaxed antialiased">
-    <!-- 🌐 顶部导航栏 -->
     <header class="backdrop-blur-lg bg-[#0A1A33]/80 border-b border-[#1E3A5F]/70 sticky top-0 z-50">
       <nav class="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         <div class="flex items-center space-x-2 text-xl font-semibold text-blue-400">
@@ -36,48 +47,22 @@ const { title = "UK Energy Data Dashboard", date, description } = Astro.props;
       </nav>
     </header>
 
-    <!-- 📰 文章标题区块 -->
-    {
-      title !== "UK Energy Data Dashboard" && (
-        <section class="max-w-3xl mx-auto px-6 pt-14 pb-6 text-center">
-          <h1 class="text-4xl md:text-5xl font-extrabold text-blue-300 tracking-tight mb-4 leading-tight">
-            {title}
-          </h1>
+    <main class="max-w-3xl mx-auto px-6 py-12 prose prose-invert prose-lg">
+      <h1 class="text-blue-300 text-4xl font-bold mb-4">{title}</h1>
 
-          {date && (
-            <p class="text-gray-400 italic mb-3">
-              {new Date(date).toLocaleDateString("en-GB", {
-                day: "2-digit",
-                month: "long",
-                year: "numeric"
-              })}
-            </p>
-          )}
+      {date && (
+        <p class="text-gray-400 italic mb-4">{date}</p>
+      )}
 
-          {description && (
-            <p class="text-blue-200 text-lg max-w-2xl mx-auto leading-relaxed">
-              {description}
-            </p>
-          )}
+      {description && (
+        <p class="text-blue-200 text-lg mb-8">{description}</p>
+      )}
 
-          <div class="h-1 w-24 mx-auto mt-6 bg-gradient-to-r from-blue-500 via-cyan-400 to-blue-500 rounded-full"></div>
-        </section>
-      )
-    }
-
-    <!-- 📄 正文内容（美观排版版式） -->
-    <main
-      class="prose prose-invert prose-lg max-w-3xl mx-auto px-6 pb-16
-      prose-headings:text-blue-300 prose-h2:mt-10 prose-h2:mb-4 prose-h3:mt-8 prose-h3:mb-3
-      prose-p:leading-relaxed prose-p:my-4 prose-li:my-1 prose-a:text-blue-400 hover:prose-a:text-cyan-300
-      prose-strong:text-blue-200 prose-blockquote:border-l-blue-400 prose-blockquote:pl-4 prose-blockquote:text-blue-100
-      prose-img:rounded-xl prose-hr:border-[#1E3A5F]/60">
       <slot />
     </main>
 
-    <!-- 🧭 页脚 -->
     <footer class="border-t border-[#1E3A5F]/60 text-gray-400 text-sm py-6 text-center mt-10">
-      © 2025 <span class="text-blue-400">ukenergydata.co.uk</span> — Auto-updated from verified public sources.
+      © 2025 <span class="text-blue-400">ukenergydata.co.uk</span>
     </footer>
   </body>
 </html>
