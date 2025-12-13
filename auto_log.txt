@@ -227,3 +227,70 @@ Traceback (most recent call last):
   File "/Users/kunlinli/Library/Python/3.9/lib/python/site-packages/openai/_client.py", line 137, in __init__
     raise OpenAIError(
 openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+[main 6b6a985] Auto-update: 2025-12-12 09:00:04
+ 1 file changed, 67 insertions(+)
+To https://github.com/youknowwho00o/ukenergydata-site.git
+   76ff944..6b6a985  main -> main
+════════════════════════════════════════════════════════════
+🔍 Checking AI generation scripts...
+
+→ Checking: scripts/auto_policy.py
+   ✅ Found: auto_policy.py
+→ Checking: scripts/auto_news.py
+   ✅ Found: auto_news.py
+→ Checking: scripts/auto_industry.py
+   ✅ Found: auto_industry.py
+→ Checking: scripts/auto_energy.py
+   ✅ Found: auto_energy.py
+════════════════════════════════════════════════════════════
+
+🚀 Running auto_policy generator...
+════════════════════════════════════════════════════════════
+❌ ERROR running auto_policy.py: Command '['python3', 'scripts/auto_policy.py']' returned non-zero exit status 1.
+
+
+🚀 Running auto_news generator...
+════════════════════════════════════════════════════════════
+❌ ERROR running auto_news.py: Command '['python3', 'scripts/auto_news.py']' returned non-zero exit status 1.
+
+
+🚀 Running auto_industry generator...
+════════════════════════════════════════════════════════════
+❌ ERROR running auto_industry.py: Command '['python3', 'scripts/auto_industry.py']' returned non-zero exit status 1.
+
+
+🚀 Running auto_energy generator...
+════════════════════════════════════════════════════════════
+❌ ERROR running auto_energy.py: Command '['python3', 'scripts/auto_energy.py']' returned non-zero exit status 1.
+
+════════════════════════════════════════════════════════════
+🎉 Completed 0/4 scripts at 2025-12-12 09:00:04
+════════════════════════════════════════════════════════════
+════════════════════════════════════════════════════════════
+🔄 Running auto Git commit & push...
+🚀 Git push complete!
+════════════════════════════════════════════════════════════
+Traceback (most recent call last):
+  File "/Users/kunlinli/ukenergydata-site/scripts/auto_policy.py", line 6, in <module>
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+  File "/Users/kunlinli/Library/Python/3.9/lib/python/site-packages/openai/_client.py", line 137, in __init__
+    raise OpenAIError(
+openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+Traceback (most recent call last):
+  File "/Users/kunlinli/ukenergydata-site/scripts/auto_news.py", line 6, in <module>
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+  File "/Users/kunlinli/Library/Python/3.9/lib/python/site-packages/openai/_client.py", line 137, in __init__
+    raise OpenAIError(
+openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+Traceback (most recent call last):
+  File "/Users/kunlinli/ukenergydata-site/scripts/auto_industry.py", line 6, in <module>
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+  File "/Users/kunlinli/Library/Python/3.9/lib/python/site-packages/openai/_client.py", line 137, in __init__
+    raise OpenAIError(
+openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
+Traceback (most recent call last):
+  File "/Users/kunlinli/ukenergydata-site/scripts/auto_energy.py", line 6, in <module>
+    client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+  File "/Users/kunlinli/Library/Python/3.9/lib/python/site-packages/openai/_client.py", line 137, in __init__
+    raise OpenAIError(
+openai.OpenAIError: The api_key client option must be set either by passing api_key to the client or by setting the OPENAI_API_KEY environment variable
